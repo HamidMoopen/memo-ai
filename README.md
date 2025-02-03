@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Memory Lane
+
+Memory Lane is an AI-powered memory collection app that helps loved ones capture and preserve their stories. Stories are tagged, summarized, and searchable – at your fingertips - forever.
+
+## Features
+
+- Voice conversations with an AI agent
+- Themed conversation topics (Growing Up, Family, Adult Life, etc.)
+- Automatic story generation and analysis
+- Beautiful, modern UI
+- Real-time conversation feedback
+- Story categorization and theme extraction
+
+## Tech Stack
+
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- ElevenLabs AI
+- OpenAI GPT-4
 
 ## Getting Started
 
-First, run the development server:
-
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/memo-ai.git
+cd memo-ai
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create a `.env.local` file in the root directory with your API keys:
+```env
+NEXT_PUBLIC_ELEVENLABS_API_KEY=your_elevenlabs_api_key
+NEXT_PUBLIC_ELEVENLABS_AGENT_ID=your_agent_id
+OPENAI_API_KEY=your_openai_api_key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the development server:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/src/app` - Next.js app router pages and API routes
+- `/src/components` - Reusable React components
+- `/src/lib` - Utility functions and shared logic
+- `/src/types` - TypeScript type definitions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](https://choosealicense.com/licenses/mit/)
