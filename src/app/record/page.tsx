@@ -4,7 +4,9 @@ import { Conversation } from "@/components/Conversation"
 import { questions, type QuestionCategory } from "@/lib/questions"
 
 interface PageProps {
-  searchParams: { category: string };
+  searchParams: {
+    [key: string]: string | string[] | undefined
+  }
 }
 
 export default function Page({ searchParams }: PageProps) {
