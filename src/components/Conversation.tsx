@@ -1,10 +1,11 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import type { StoryData } from '@/types/story';
+import { questions } from "@/lib/questions";
+import type { QuestionCategory } from "@/lib/questions";
 
 interface Message {
     source: 'user' | 'ai';
@@ -16,7 +17,11 @@ interface ConversationError {
     code?: string;
 }
 
-export function Conversation() {
+interface ConversationProps {
+  category: string;
+}
+
+export function Conversation({ category }: ConversationProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

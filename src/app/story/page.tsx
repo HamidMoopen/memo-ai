@@ -110,6 +110,10 @@ export default function StoryPage() {
                         </ul>
                     </section>
                 </div>
+
+                <div className="prose prose-sm mt-4">
+                    <p>Here&apos;s what we&apos;ve captured from your conversation.</p>
+                </div>
             </div>
         </div>
     );

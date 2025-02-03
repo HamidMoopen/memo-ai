@@ -10,23 +10,25 @@ export interface DataCollection {
 
 declare global {
   interface Window {
-    elevenLabsInitialized?: boolean;
     elevenlabs: {
-      init: (config: { apiKey: string }) => void;
-      configure: (config: { 
-        dataCollection?: DataCollection;
-      }) => void;
       agent: {
         start: (config: {
           agentId: string;
-          context?: any;
-          history?: any[];
-        }) => Promise<{
-          on: (event: string, callback: (data: any) => void) => void;
-          stop: () => Promise<void>;
-          getData: () => Promise<any>;
-        }>;
+          context?: Record<string, string>;
+        }) => Promise<Conversation>;
       };
     };
+    elevenLabsInitialized: boolean;
   }
-} 
+}
+
+interface Conversation {
+  on: (
+    event: "update" | "error" | "end",
+    callback: (data: string | Error) => void
+  ) => void;
+  stop: () => Promise<void>;
+  getData: () => Promise<Record<string, string>>;
+}
+
+export {}; 

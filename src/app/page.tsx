@@ -1,7 +1,7 @@
-import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Heart, Users, Star } from "lucide-react"
+import { Metadata } from "next"
 
 export default function Page() {
   return (
@@ -40,9 +40,11 @@ export default function Page() {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#8b2455] leading-tight mb-8">
             Family stories and wisdom, captured and saved forever.
           </h1>
-          <p className="text-gray-700 text-xl mb-8">
-            Memory Lane helps loved ones capture and preserve stories. Stories are tagged, summarized and searchable –
-            at your fingertips - forever.
+          <p className="text-lg text-gray-600 mb-8">
+            Let&apos;s preserve your memories together. Share your stories, and I&apos;ll help you capture them for generations to come.
+          </p>
+          <p className="text-sm text-gray-500">
+            Don&apos;t worry about getting everything perfect - we&apos;ll help you organize and polish your stories.
           </p>
           <Link href="/topics">
             <Button className="bg-[#c84c30] hover:bg-[#c84c30]/90 text-white px-8 py-6 text-lg">Try it out now</Button>
