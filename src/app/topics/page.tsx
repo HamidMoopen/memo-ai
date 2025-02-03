@@ -19,7 +19,7 @@ export default function TopicsPage() {
             {row.map((topic) => (
               <Link
                 key={topic}
-                href={`/record?category=${topic.toLowerCase().replace(/\s+/g, "-")}`}
+                href={`/record/${topic.toLowerCase().replace(/\s+/g, "-")}`}
                 className="px-6 py-3 rounded-full border border-white hover:bg-white/10 transition-colors"
               >
                 {topic}

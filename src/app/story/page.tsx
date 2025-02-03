@@ -1,11 +1,12 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import type { StoryData } from '@/types/story';
 
-export default function StoryPage() {
+function StoryContent() {
     const searchParams = useSearchParams();
     const storyDataParam = searchParams.get('data');
     let storyData: StoryData | null = null;
@@ -116,5 +117,13 @@ export default function StoryPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function StoryPage() {
+    return (
+        <Suspense fallback={<div>Loading story...</div>}>
+            <StoryContent />
+        </Suspense>
     );
 } 
