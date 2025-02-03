@@ -93,7 +93,7 @@ export function Conversation({ category }: ConversationProps) {
             await navigator.mediaDevices.getUserMedia({ audio: true });
 
             // Get signed URL for private agent
-            const response = await fetch("/api/get-signed-url");
+            const response = await fetch(`/api/get-signed-url?category=${encodeURIComponent(category)}`);
             if (!response.ok) {
                 const data = await response.json();
                 throw new Error(data.error || 'Failed to get signed URL');
@@ -112,7 +112,7 @@ export function Conversation({ category }: ConversationProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [conversation]);
+    }, [conversation, category]);
 
     const stopConversation = useCallback(async () => {
         try {

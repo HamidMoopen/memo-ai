@@ -58,7 +58,7 @@ export async function POST(request: Request) {
             const storyData: StoryData = JSON.parse(cleanedContent);
             return NextResponse.json(storyData);
         } catch (error) {
-            console.error('Failed to parse story data:', cleanedContent);
+            console.error('Failed to parse story data:', error);
             throw new Error('Failed to parse story data from ChatGPT response');
         }
     } catch (error) {

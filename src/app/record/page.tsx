@@ -1,24 +1,14 @@
 "use client"
 
-import Link from "next/link"
-import { useState, useEffect, useCallback } from "react"
-import { useSearchParams } from "next/navigation"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Conversation } from "@/components/Conversation"
 import { questions, type QuestionCategory } from "@/lib/questions"
-import { Button } from "@/components/ui/button"
-import { toast } from 'sonner'
-import { Toaster } from 'sonner'
-import type { StoryData } from '@/types/story'
-import Conversation from "@/components/Conversation"
 
 interface PageProps {
   searchParams: { category: string };
 }
 
 export default function Page({ searchParams }: PageProps) {
-  const category = searchParams.category;
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const category = searchParams.category as QuestionCategory;
 
   if (!category) {
     return <div>No category selected</div>;

@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
 
 const topics = [
   ["Growing Up", "Family", "Love Life"],
