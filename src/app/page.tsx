@@ -10,22 +10,7 @@ export default function Page() {
           <Link href="/" className="text-[#8b2455] text-xl font-medium">
             Memory Lane
           </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/about" className="text-[#8b2455] hover:text-[#8b2455]/80">
-              About
-            </Link>
-            <Link href="/team" className="text-[#8b2455] hover:text-[#8b2455]/80">
-              Team
-            </Link>
-            <Link href="/blog" className="text-[#8b2455] hover:text-[#8b2455]/80">
-              Blog
-            </Link>
-            <Link href="/testimonials" className="text-[#8b2455] hover:text-[#8b2455]/80">
-              Testimonials
-            </Link>
-            <Link href="/faq" className="text-[#8b2455] hover:text-[#8b2455]/80">
-              FAQ
-            </Link>
+          <div className="hidden md:flex items-center">
             <Link href="/topics">
               <Button className="bg-[#8b2455] hover:bg-[#8b2455]/90 text-white">Try it out now</Button>
             </Link>
@@ -97,7 +82,9 @@ export default function Page() {
           <h2 className="text-3xl md:text-4xl font-serif text-[#8b2455] mb-8">
             Start Preserving Your Family Stories Today
           </h2>
-          <Button className="bg-[#c84c30] hover:bg-[#c84c30]/90 text-white px-8 py-6 text-lg">Try it out now</Button>
+          <Link href="/topics">
+            <Button className="bg-[#c84c30] hover:bg-[#c84c30]/90 text-white px-8 py-6 text-lg">Try it out now</Button>
+          </Link>
         </div>
       </main>
     </div>
