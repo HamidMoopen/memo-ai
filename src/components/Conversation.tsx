@@ -1,11 +1,9 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { questions } from "@/lib/questions";
-import type { QuestionCategory } from "@/lib/questions";
 
 interface Message {
     source: 'user' | 'ai';

@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Heart, Users, Star } from "lucide-react"
-import { Metadata } from "next"
 
 export default function Page() {
   return (
