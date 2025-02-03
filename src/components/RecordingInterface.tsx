@@ -2,23 +2,69 @@
 
 import { Conversation } from "@/components/Conversation"
 import { questions, type QuestionCategory } from "@/lib/questions"
+import { useState } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface RecordingInterfaceProps {
   category: string;
 }
 
 export function RecordingInterface({ category }: RecordingInterfaceProps) {
-  const categoryAsType = category.toLowerCase().replace(/-/g, ' ') as QuestionCategory;
+  const categoryAsType = category.toLowerCase() as QuestionCategory;
   const categoryQuestions = questions[categoryAsType];
+  const [currentQuestion, setCurrentQuestion] = useState(0);
 
   if (!categoryQuestions) {
     return <div>Invalid category</div>;
   }
 
+  const nextQuestion = () => {
+    setCurrentQuestion((prev) => (prev + 1) % categoryQuestions.length);
+  };
+
+  const previousQuestion = () => {
+    setCurrentQuestion((prev) => (prev - 1 + categoryQuestions.length) % categoryQuestions.length);
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Recording: {category}</h1>
-      <Conversation category={categoryAsType} />
+    <div>
+      {/* Question Carousel */}
+      <div className="relative py-8">
+        <button
+          onClick={previousQuestion}
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+          aria-label="Previous question"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        <div className="text-2xl font-serif px-16">{categoryQuestions[currentQuestion]}</div>
+
+        <button
+          onClick={nextQuestion}
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+          aria-label="Next question"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Dots */}
+      <div className="flex justify-center gap-2 py-8">
+        {categoryQuestions.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentQuestion(index)}
+            className={`w-2 h-2 rounded-full ${index === currentQuestion ? "bg-white" : "bg-white/30"}`}
+            aria-label={`Go to question ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Conversation Interface */}
+      <div className="mt-8">
+        <Conversation category={categoryAsType} />
+      </div>
     </div>
   );
 } 

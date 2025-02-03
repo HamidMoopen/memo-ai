@@ -49,6 +49,11 @@ export function Conversation({ category }: ConversationProps) {
             toast.error('Error during conversation');
             setError(error.message);
         },
+        config: {
+            keepAlive: true,
+            reconnect: false,
+            debug: true
+        }
     });
 
     const generateStory = async () => {
@@ -56,7 +61,6 @@ export function Conversation({ category }: ConversationProps) {
         try {
             toast.info('Generating story from conversation...');
             
-            // Generate story from conversation
             const storyResponse = await fetch('/api/generate-story', {
                 method: 'POST',
                 headers: {
@@ -72,7 +76,6 @@ export function Conversation({ category }: ConversationProps) {
             const storyData = await storyResponse.json();
             console.log('Generated story:', storyData);
 
-            // Navigate to the story page with the data
             router.push(`/story?data=${encodeURIComponent(JSON.stringify(storyData))}`);
         } catch (error) {
             console.error('Error generating story:', error);
@@ -87,20 +90,17 @@ export function Conversation({ category }: ConversationProps) {
             setIsLoading(true);
             setError(null);
 
-            // Request microphone permission
             await navigator.mediaDevices.getUserMedia({ audio: true });
 
-            // Get signed URL for private agent
-            const response = await fetch(`/api/get-signed-url?category=${encodeURIComponent(category)}`);
+            const response = await fetch('/api/get-signed-url');
+            const data = await response.json();
+            
             if (!response.ok) {
-                const data = await response.json();
                 throw new Error(data.error || 'Failed to get signed URL');
             }
-            const { signedUrl } = await response.json();
 
-            // Start the conversation with signed URL
             await conversation.startSession({
-                signedUrl,
+                signedUrl: data.signedUrl,
             });
 
         } catch (error) {
@@ -110,7 +110,7 @@ export function Conversation({ category }: ConversationProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [conversation, category]);
+    }, [conversation]);
 
     const stopConversation = useCallback(async () => {
         try {
@@ -171,7 +171,7 @@ export function Conversation({ category }: ConversationProps) {
                 </button>
             )}
 
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center text-gray-900">
                 <p>Status: {conversation.status}</p>
                 <p>Agent is {conversation.isSpeaking ? 'speaking' : 'listening'}</p>
             </div>

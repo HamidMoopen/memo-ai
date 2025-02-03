@@ -7,6 +7,8 @@ export async function GET() {
             {
                 headers: {
                     'xi-api-key': process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY!,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
             }
         );
