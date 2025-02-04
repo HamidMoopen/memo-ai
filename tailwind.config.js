@@ -1,14 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-    "./node_modules/shadcn/**/*.{js,jsx,ts,tsx}",
-    "app/**/*.{ts,tsx}",
-    "components/**/*.{ts,tsx}",
-    "./**/*.{ts,tsx}"
-  ],
+  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -44,25 +45,53 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        //These colors are preserved from the original config
-        "#8b2455": "#8b2455",
-        "#c84c30": "#c84c30",
-        "#fdf4f0": "#fdf4f0",
-      },
-      fontFamily: {
-        serif: ["Georgia", "serif"],
+        // Custom colors
+        "memory-purple": {
+          DEFAULT: "#8b2455",
+          light: "#a02d64",
+          dark: "#761d47",
+        },
+        "memory-orange": {
+          DEFAULT: "#c84c30",
+          light: "#d45e45",
+          dark: "#b33f26",
+        },
+        "memory-cream": "#fdf4f0",
+        "memory-dark": "#461635",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        serif: ["Georgia", "serif"],
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
+        "fade-in": {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
+        "fade-in-up": {
+          "0%": { opacity: 0, transform: "translateY(10px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
+        },
+      },
       animation: {
-        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-        'ping-slower': 'ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.5s ease-out",
+        "fade-in-up": "fade-in-up 0.5s ease-out",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
-
+} 
