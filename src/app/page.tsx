@@ -13,7 +13,7 @@ export default function Page() {
               href="/"
               className="text-memory-purple text-2xl font-serif font-bold transition-colors hover:text-memory-purple-light"
             >
-              Memory Lane
+              Eterna
             </Link>
             <div className="hidden md:flex items-center gap-8">
               {["About", "Team", "Blog", "Testimonials", "FAQ"].map((item) => (
@@ -41,7 +41,7 @@ export default function Page() {
               Family stories and wisdom, captured and saved forever.
             </h1>
             <p className="text-gray-700 text-xl mb-8">
-              Memory Lane helps loved ones capture and preserve stories. Stories are tagged, summarized and searchable –
+              Eterna helps loved ones capture and preserve stories. Stories are tagged, summarized and searchable –
               at your fingertips - forever.
             </p>
             <Link href="/topics">

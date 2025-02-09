@@ -16,6 +16,7 @@ Given a conversation between a user and an AI agent, generate a structured story
     "follow_up_topics": ["Topic 1", "Topic 2", "etc"]
 }
 
+If a previous story is provided, incorporate its content and continue the narrative while maintaining consistency.
 Important: Return ONLY the JSON object, no markdown formatting or additional text.`;
 
 export async function POST(request: Request) {
@@ -29,13 +30,26 @@ export async function POST(request: Request) {
             );
         }
 
-        const { messages } = await request.json();
+        const { messages, previousStory } = await request.json();
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
             console.error('Invalid or empty messages array:', messages);
             return NextResponse.json(
                 { error: 'Invalid conversation data' },
                 { status: 400 }
             );
+        }
+
+        // Prepare messages array with previous story context if available
+        const contextMessages = [];
+        if (previousStory) {
+            contextMessages.push({
+                role: 'system',
+                content: 'Here is the previous story content to incorporate and continue:',
+            });
+            contextMessages.push({
+                role: 'assistant',
+                content: JSON.stringify(previousStory, null, 2),
+            });
         }
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -48,6 +62,7 @@ export async function POST(request: Request) {
                 model: 'gpt-4',
                 messages: [
                     { role: 'system', content: SYSTEM_PROMPT },
+                    ...contextMessages,
                     { role: 'user', content: 'Here is the conversation to analyze:' },
                     ...messages.map((msg: { source: string, message: string }) => ({
                         role: msg.source === 'user' ? 'user' : 'assistant',

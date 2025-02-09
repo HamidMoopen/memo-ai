@@ -58,7 +58,7 @@ export default function RecordPage() {
             <Link href="/topics" className="text-memory-cream hover:text-memory-orange transition-colors">
               <ChevronLeft className="w-8 h-8" />
             </Link>
-            <h1 className="text-2xl font-serif">Memory Lane</h1>
+            <h1 className="text-2xl font-serif">Eterna</h1>
             <div className="w-8" /> {/* Spacer for centering */}
           </div>
 
