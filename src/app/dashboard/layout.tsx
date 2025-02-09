@@ -32,7 +32,7 @@ export default function DashboardLayout({
               Eterna
             </Link>
             <Link
-              href="/login"
+              href="/"
               className="text-memory-purple hover:text-memory-purple-light transition-colors"
             >
               Sign Out
