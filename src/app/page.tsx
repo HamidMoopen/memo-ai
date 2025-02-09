@@ -25,7 +25,7 @@ export default function Page() {
                   {item}
                 </Link>
               ))}
-              <Link href="/topics">
+              <Link href="/login">
                 <Button className="bg-memory-purple hover:bg-memory-purple-light text-white transition-all duration-300 ease-in-out transform hover:scale-105 rounded-full px-6">
                   Try it out now
                 </Button>
@@ -44,7 +44,7 @@ export default function Page() {
               Eterna helps loved ones capture and preserve stories. Stories are tagged, summarized and searchable –
               at your fingertips - forever.
             </p>
-            <Link href="/topics">
+            <Link href="/login">
               <Button className="bg-memory-orange hover:bg-memory-orange-light text-white px-8 py-6 text-lg transition-all duration-300 ease-in-out transform hover:scale-105 rounded-full">
                 Try it out now
               </Button>
@@ -104,7 +104,7 @@ export default function Page() {
             <h2 className="text-3xl md:text-4xl font-serif text-memory-purple mb-8">
               Start Preserving Your Family Stories Today
             </h2>
-            <Link href="/topics">
+            <Link href="/login">
               <Button className="bg-memory-orange hover:bg-memory-orange-light text-white px-8 py-6 text-lg transition-all duration-300 ease-in-out transform hover:scale-105 rounded-full">
                 Try it out now
               </Button>
