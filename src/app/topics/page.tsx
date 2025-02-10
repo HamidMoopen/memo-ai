@@ -1,5 +1,10 @@
+'use client';
+
+import { useRouter } from "next/navigation";
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 
 const topics = [
   ["Growing Up", "Family", "Love Life"],
@@ -8,6 +13,8 @@ const topics = [
 ]
 
 export default function TopicsPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-memory-dark relative">
       <div className="fixed inset-0 bg-memory-dark -z-10" /> {/* Fixed background */}
@@ -15,9 +22,7 @@ export default function TopicsPage() {
         <div className="container mx-auto px-4 py-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-16">
-            <Link href="/" className="text-memory-cream hover:text-memory-orange transition-colors">
-              <ChevronLeft className="w-8 h-8" />
-            </Link>
+            <BackButton />
             <h1 className="text-2xl font-serif">Eterna</h1>
             <div className="w-8" /> {/* Spacer for centering */}
           </div>
