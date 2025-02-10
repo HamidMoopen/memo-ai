@@ -9,8 +9,18 @@ import {
     ChartBarBig
 } from "lucide-react";
 import { DashboardHeader } from "./components/DashboardHeader";
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 export default function DashboardPage() {
+    const pathname = usePathname();
+    const { addToHistory } = useNavigation();
+
+    useEffect(() => {
+        addToHistory(pathname);
+    }, [pathname, addToHistory]);
+
     return (
         <div>
             <DashboardHeader title="Welcome to Your Stories" description="Your life story, recorded and preserved" />
