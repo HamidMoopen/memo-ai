@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Mic, Pause, Play, ChevronLeft, ChevronDown, Copy, Square } from 'lucide-react';
+import { Mic, Pause, Play, ChevronLeft, ChevronDown, Copy, Square, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -14,7 +14,7 @@ interface Message {
 }
 
 interface ConversationProps {
-  category: string;
+    category: string;
 }
 
 export function Conversation({ category }: ConversationProps) {
@@ -26,7 +26,7 @@ export function Conversation({ category }: ConversationProps) {
     const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
     const [currentStory, setCurrentStory] = useState<any>(null);
     const conversationRef = useRef<any>(null);
-    
+
     // Track recording state
     const [recordingState, setRecordingState] = useState<'idle' | 'listening'>('idle');
 
@@ -47,7 +47,7 @@ export function Conversation({ category }: ConversationProps) {
         try {
             // @ts-ignore - ElevenLabs types are not complete
             const { Conversation } = await import('@11labs/client');
-            
+
             conversationRef.current = await Conversation.startSession({
                 signedUrl,
                 onConnect: () => {
@@ -68,7 +68,7 @@ export function Conversation({ category }: ConversationProps) {
                         content: data.message
                     };
                     setConversationHistory(prev => [...prev, message]);
-                    
+
                     // Generate story after each user message, using previous story as context
                     if (data.source === 'user') {
                         generateStory();
@@ -94,7 +94,7 @@ export function Conversation({ category }: ConversationProps) {
                 await navigator.mediaDevices.getUserMedia({ audio: true });
                 const response = await fetch('/api/get-signed-url');
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to get signed URL');
                 }
@@ -125,7 +125,7 @@ export function Conversation({ category }: ConversationProps) {
         setIsSaving(true);
         try {
             // Always include the most recent messages
-            const validMessages = conversationHistory.filter(msg => 
+            const validMessages = conversationHistory.filter(msg =>
                 msg && typeof msg.content === 'string' && msg.content.trim() !== ''
             );
 
@@ -139,7 +139,7 @@ export function Conversation({ category }: ConversationProps) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     messages: validMessages,
                     previousStory: currentStory // Always pass previous story for context
                 })
@@ -151,7 +151,7 @@ export function Conversation({ category }: ConversationProps) {
             }
 
             const storyData = await storyResponse.json();
-            
+
             // Validate story data structure
             if (!storyData.story_narrative || !Array.isArray(storyData.key_themes) || !Array.isArray(storyData.notable_quotes)) {
                 throw new Error('Invalid story data structure received');
@@ -159,7 +159,7 @@ export function Conversation({ category }: ConversationProps) {
 
             // Update the current story with the new data
             setCurrentStory(storyData);
-            
+
             // Keep the sidebar open as the story updates
             setSidebarOpen(true);
 
@@ -175,50 +175,51 @@ export function Conversation({ category }: ConversationProps) {
         }
     };
 
+    const saveStory = async () => {
+        // Implementation of saveStory function
+    };
+
     return (
-        <div className="relative max-w-full overflow-x-hidden">
-            {/* Story Sidebar - Only render when we have a story */}
-            {currentStory && (
-                <div 
-                    className={`fixed right-0 top-0 h-full w-96 bg-memory-dark border-l border-memory-purple/20 transform transition-transform duration-300 ease-in-out z-[100] shadow-xl ${
-                        sidebarOpen ? 'translate-x-0' : 'translate-x-full'
-                    }`}
-                >
-                    <div className="p-6 h-full overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-serif text-memory-cream">Generated Story</h2>
+        <div className="flex">
+            {/* Sidebar */}
+            {sidebarOpen && currentStory && (
+                <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-lg p-8 overflow-y-auto">
+                    <div className="space-y-8">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-[#3c4f76]">Story Preview</h2>
                             <button
                                 onClick={() => setSidebarOpen(false)}
-                                className="text-memory-cream/60 hover:text-memory-cream"
+                                className="text-[#383f51] hover:text-[#3c4f76]"
                             >
-                                <ChevronLeft className="w-6 h-6" />
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
-                        
-                        {/* Story Sections */}
+
                         <div className="space-y-6">
-                            {/* Narrative */}
+                            {/* Story Narrative */}
                             <div className="space-y-2">
-                                <h3 className="text-lg font-medium text-memory-cream/90">Narrative</h3>
+                                <h3 className="text-lg font-medium text-[#3c4f76]">Story</h3>
                                 <textarea
-                                    className="w-full h-32 bg-memory-purple/10 text-memory-cream/90 p-3 rounded-lg resize-none"
+                                    className="w-full h-32 bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                     value={currentStory.story_narrative}
-                                    onChange={(e) => setCurrentStory({
-                                        ...currentStory,
-                                        story_narrative: e.target.value
-                                    })}
+                                    onChange={(e) => {
+                                        setCurrentStory({
+                                            ...currentStory,
+                                            story_narrative: e.target.value
+                                        });
+                                    }}
                                 />
                             </div>
 
                             {/* Key Themes */}
                             <div className="space-y-2">
-                                <h3 className="text-lg font-medium text-memory-cream/90">Key Themes</h3>
+                                <h3 className="text-lg font-medium text-[#3c4f76]">Key Themes</h3>
                                 <div className="space-y-2">
                                     {currentStory.key_themes.map((theme: string, index: number) => (
                                         <input
                                             key={index}
                                             type="text"
-                                            className="w-full bg-memory-purple/10 text-memory-cream/90 p-2 rounded"
+                                            className="w-full bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                             value={theme}
                                             onChange={(e) => {
                                                 const newThemes = [...currentStory.key_themes];
@@ -235,13 +236,13 @@ export function Conversation({ category }: ConversationProps) {
 
                             {/* Notable Quotes */}
                             <div className="space-y-2">
-                                <h3 className="text-lg font-medium text-memory-cream/90">Notable Quotes</h3>
+                                <h3 className="text-lg font-medium text-[#3c4f76]">Notable Quotes</h3>
                                 <div className="space-y-2">
                                     {currentStory.notable_quotes.map((quote: string, index: number) => (
                                         <input
                                             key={index}
                                             type="text"
-                                            className="w-full bg-memory-purple/10 text-memory-cream/90 p-2 rounded"
+                                            className="w-full bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                             value={quote}
                                             onChange={(e) => {
                                                 const newQuotes = [...currentStory.notable_quotes];
@@ -258,17 +259,17 @@ export function Conversation({ category }: ConversationProps) {
 
                             {/* Historical Context */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium text-memory-cream/90">Historical Context</h3>
-                                
+                                <h3 className="text-lg font-medium text-[#3c4f76]">Historical Context</h3>
+
                                 {/* Time Periods */}
                                 <div className="space-y-2">
-                                    <h4 className="text-sm font-medium text-memory-cream/80">Time Periods</h4>
+                                    <h4 className="text-sm font-medium text-[#3c4f76]">Time Periods</h4>
                                     <div className="space-y-2">
                                         {currentStory.historical_context.time_periods.map((period: string, index: number) => (
                                             <input
                                                 key={index}
                                                 type="text"
-                                                className="w-full bg-memory-purple/10 text-memory-cream/90 p-2 rounded"
+                                                className="w-full bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                                 value={period}
                                                 onChange={(e) => {
                                                     const newPeriods = [...currentStory.historical_context.time_periods];
@@ -288,13 +289,13 @@ export function Conversation({ category }: ConversationProps) {
 
                                 {/* Events */}
                                 <div className="space-y-2">
-                                    <h4 className="text-sm font-medium text-memory-cream/80">Events</h4>
+                                    <h4 className="text-sm font-medium text-[#3c4f76]">Events</h4>
                                     <div className="space-y-2">
                                         {currentStory.historical_context.events.map((event: string, index: number) => (
                                             <input
                                                 key={index}
                                                 type="text"
-                                                className="w-full bg-memory-purple/10 text-memory-cream/90 p-2 rounded"
+                                                className="w-full bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                                 value={event}
                                                 onChange={(e) => {
                                                     const newEvents = [...currentStory.historical_context.events];
@@ -314,13 +315,13 @@ export function Conversation({ category }: ConversationProps) {
 
                                 {/* Cultural Context */}
                                 <div className="space-y-2">
-                                    <h4 className="text-sm font-medium text-memory-cream/80">Cultural Context</h4>
+                                    <h4 className="text-sm font-medium text-[#3c4f76]">Cultural Context</h4>
                                     <div className="space-y-2">
                                         {currentStory.historical_context.cultural_context.map((context: string, index: number) => (
                                             <input
                                                 key={index}
                                                 type="text"
-                                                className="w-full bg-memory-purple/10 text-memory-cream/90 p-2 rounded"
+                                                className="w-full bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                                 value={context}
                                                 onChange={(e) => {
                                                     const newContexts = [...currentStory.historical_context.cultural_context];
@@ -341,13 +342,13 @@ export function Conversation({ category }: ConversationProps) {
 
                             {/* Follow-up Topics */}
                             <div className="space-y-2">
-                                <h3 className="text-lg font-medium text-memory-cream/90">Follow-up Topics</h3>
+                                <h3 className="text-lg font-medium text-[#3c4f76]">Follow-up Topics</h3>
                                 <div className="space-y-2">
                                     {currentStory.follow_up_topics.map((topic: string, index: number) => (
                                         <input
                                             key={index}
                                             type="text"
-                                            className="w-full bg-memory-purple/10 text-memory-cream/90 p-2 rounded"
+                                            className="w-full bg-gray-50 text-[#383f51] p-3 rounded-xl border-2 border-gray-100"
                                             value={topic}
                                             onChange={(e) => {
                                                 const newTopics = [...currentStory.follow_up_topics];
@@ -362,6 +363,14 @@ export function Conversation({ category }: ConversationProps) {
                                 </div>
                             </div>
                         </div>
+
+                        <Button
+                            onClick={saveStory}
+                            disabled={isSaving}
+                            className="w-full bg-[#3c4f76] hover:bg-[#2a3b5a] text-white py-6 rounded-2xl text-lg"
+                        >
+                            {isSaving ? "Saving..." : "Save Story"}
+                        </Button>
                     </div>
                 </div>
             )}
@@ -370,33 +379,34 @@ export function Conversation({ category }: ConversationProps) {
             <div className="w-full">
                 <div className="flex flex-col items-center gap-4">
                     {error && (
-                        <div className="bg-red-500/10 text-red-500 p-4 rounded-lg mb-4">
+                        <div className="bg-red-100 text-red-600 p-4 rounded-2xl mb-4">
                             {error}
                         </div>
                     )}
-                    
+
                     {/* Recording Button */}
                     <Button
                         onClick={toggleRecording}
                         disabled={isLoading}
                         size="lg"
                         className={`
-                            w-20 h-20 rounded-full shadow-lg transition-all duration-300
-                            ${recordingState === 'listening' ? 'bg-memory-orange hover:bg-memory-orange-light' : 
-                              'bg-memory-purple hover:bg-memory-purple-light'}
+                            w-20 h-20 rounded-2xl shadow-lg transition-all duration-300
+                            ${recordingState === 'listening'
+                                ? 'bg-[#3c4f76] hover:bg-[#2a3b5a]'
+                                : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'}
                         `}
                     >
                         {isLoading ? (
                             <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : recordingState === 'listening' ? (
-                            <Square className="w-6 h-6" />
+                            <Square className="w-6 h-6 text-white" />
                         ) : (
-                            <Mic className="w-6 h-6" />
+                            <Mic className="w-6 h-6 text-white" />
                         )}
                     </Button>
 
                     {/* Recording Status */}
-                    <div className="text-sm font-medium text-memory-cream/80">
+                    <div className="text-sm font-medium text-[#383f51]">
                         {recordingState === 'listening' ? 'Listening...' : 'Ready to start'}
                     </div>
                 </div>

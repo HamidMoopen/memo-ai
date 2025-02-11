@@ -13,7 +13,7 @@ export function TopicChart({ data }: TopicChartProps) {
                 <BarChart data={data}>
                     <XAxis
                         dataKey="name"
-                        stroke="#888888"
+                        stroke="#383f51"
                         fontSize={14}
                         tickLine={false}
                         axisLine={false}
@@ -23,7 +23,7 @@ export function TopicChart({ data }: TopicChartProps) {
                         height={60}
                     />
                     <YAxis
-                        stroke="#888888"
+                        stroke="#383f51"
                         fontSize={14}
                         tickLine={false}
                         axisLine={false}
@@ -32,14 +32,17 @@ export function TopicChart({ data }: TopicChartProps) {
                     />
                     <Tooltip
                         contentStyle={{
-                            fontSize: '16px',
-                            borderRadius: '8px',
-                            padding: '12px'
+                            backgroundColor: '#fff',
+                            border: 'none',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            fontSize: '14px',
+                            padding: '12px 16px'
                         }}
                     />
                     <Bar
                         dataKey="count"
-                        fill="#8b2455"
+                        fill="#3c4f76"
                         radius={[8, 8, 0, 0]}
                         barSize={40}
                     />
