@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Memory Lane',
+  title: 'Eterna',
   description: 'Capture and preserve your stories',
 }
 
