@@ -11,7 +11,7 @@ export function BackButton() {
         <Button
             variant="ghost"
             onClick={navigateBack}
-            className="text-memory-purple hover:text-memory-purple-light"
+            className="text-[#3c4f76] hover:text-[#2a3b5a] hover:bg-[#3c4f76]/10"
         >
             <ChevronLeft className="w-8 h-8" />
         </Button>
