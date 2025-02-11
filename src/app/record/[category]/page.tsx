@@ -24,14 +24,25 @@ export default async function Page({ params }: PageProps) {
           <div className="container mx-auto px-8 py-6">
             <div className="flex items-center justify-between">
               <Link
-                href="/topics"
-                className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors flex items-center gap-2"
+                href="/dashboard"
+                className="text-2xl font-bold text-[#3c4f76] hover:text-[#2a3b5a] transition-colors"
               >
-                <ChevronLeft className="w-6 h-6" />
-                <span>Back to Topics</span>
+                Eterna
               </Link>
-              <h1 className="text-2xl font-bold text-[#3c4f76]">Eterna</h1>
-              <div className="w-24 opacity-0">Back to Topics</div>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/topics"
+                  className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+                >
+                  Topics
+                </Link>
+                <Link
+                  href="/dashboard/chapters"
+                  className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+                >
+                  Chapters
+                </Link>
+              </div>
             </div>
           </div>
         </div>
