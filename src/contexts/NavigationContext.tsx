@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 type NavigationContextType = {
     navigateBack: () => void;
@@ -12,6 +12,7 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 
 export function NavigationProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
+    const pathname = usePathname();
     const [history, setHistory] = useState<string[]>(['/']);
 
     const addToHistory = useCallback((path: string) => {
@@ -19,6 +20,12 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     const navigateBack = useCallback(() => {
+        // Special case for topics page - always go to dashboard
+        if (pathname === '/topics') {
+            router.push('/dashboard');
+            return;
+        }
+
         setHistory(prev => {
             const newHistory = [...prev];
             // Remove current page
@@ -28,7 +35,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
             router.push(previousPage);
             return newHistory;
         });
-    }, [router]);
+    }, [router, pathname]);
 
     return (
         <NavigationContext.Provider value={{ navigateBack, addToHistory }}>
