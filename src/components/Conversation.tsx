@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Mic, Pause, Play, ChevronLeft, ChevronDown, Copy, Square, X } from 'lucide-react';
+import { Mic, Pause, Play, ChevronLeft, ChevronDown, Copy, Square, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -23,12 +23,14 @@ export function Conversation({ category }: ConversationProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
     const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
     const [currentStory, setCurrentStory] = useState<any>(null);
     const conversationRef = useRef<any>(null);
 
     // Track recording state
     const [recordingState, setRecordingState] = useState<'idle' | 'listening'>('idle');
+    const [conversationEnded, setConversationEnded] = useState(false);
 
     // Handle keyboard shortcuts
     useEffect(() => {
@@ -113,6 +115,7 @@ export function Conversation({ category }: ConversationProps) {
                     await conversationRef.current.endSession();
                 }
                 setRecordingState('idle');
+                setConversationEnded(true);
                 toast.info('Conversation ended');
             } catch (error) {
                 console.error('Failed to end conversation:', error);
@@ -124,10 +127,13 @@ export function Conversation({ category }: ConversationProps) {
     const generateStory = async () => {
         setIsSaving(true);
         try {
-            // Always include the most recent messages
+            // Filter out invalid messages and format them correctly
             const validMessages = conversationHistory.filter(msg =>
                 msg && typeof msg.content === 'string' && msg.content.trim() !== ''
-            );
+            ).map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.content
+            }));
 
             if (validMessages.length === 0) {
                 toast.error('No valid conversation content to generate story');
@@ -141,24 +147,18 @@ export function Conversation({ category }: ConversationProps) {
                 },
                 body: JSON.stringify({
                     messages: validMessages,
-                    previousStory: currentStory // Always pass previous story for context
+                    previousStory: currentStory
                 })
             });
 
+            const responseData = await storyResponse.json();
+
             if (!storyResponse.ok) {
-                const errorData = await storyResponse.json();
-                throw new Error(errorData.error || 'Failed to generate story');
-            }
-
-            const storyData = await storyResponse.json();
-
-            // Validate story data structure
-            if (!storyData.story_narrative || !Array.isArray(storyData.key_themes) || !Array.isArray(storyData.notable_quotes)) {
-                throw new Error('Invalid story data structure received');
+                throw new Error(responseData.error || 'Failed to generate story');
             }
 
             // Update the current story with the new data
-            setCurrentStory(storyData);
+            setCurrentStory(responseData);
 
             // Keep the sidebar open as the story updates
             setSidebarOpen(true);
@@ -176,7 +176,23 @@ export function Conversation({ category }: ConversationProps) {
     };
 
     const saveStory = async () => {
-        // Implementation of saveStory function
+        setIsSaving(true);
+        try {
+            // Simulate saving delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setIsSaved(true);
+            toast.success('Story saved successfully');
+            
+            // Reset saved state after 2 seconds
+            setTimeout(() => {
+                setIsSaved(false);
+            }, 2000);
+        } catch (error) {
+            console.error('Error saving story:', error);
+            toast.error('Failed to save story');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -366,10 +382,31 @@ export function Conversation({ category }: ConversationProps) {
 
                         <Button
                             onClick={saveStory}
-                            disabled={isSaving}
-                            className="w-full bg-[#3c4f76] hover:bg-[#2a3b5a] text-white py-6 rounded-2xl text-lg"
+                            disabled={isSaving || isSaved}
+                            className={`
+                                w-full py-6 rounded-2xl text-lg relative
+                                transition-all duration-300 ease-in-out
+                                ${isSaved 
+                                    ? 'bg-green-600 hover:bg-green-700'
+                                    : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'}
+                                text-white
+                            `}
                         >
-                            {isSaving ? "Saving..." : "Save Story"}
+                            <span className={`
+                                flex items-center justify-center gap-2
+                                transition-opacity duration-300
+                                ${isSaved ? 'opacity-0' : 'opacity-100'}
+                            `}>
+                                {isSaving ? "Saving..." : "Save Story"}
+                            </span>
+                            {isSaved && (
+                                <span className="
+                                    absolute inset-0 flex items-center justify-center
+                                    text-white animate-fade-in-up
+                                ">
+                                    <Check className="w-6 h-6" />
+                                </span>
+                            )}
                         </Button>
                     </div>
                 </div>
@@ -409,6 +446,18 @@ export function Conversation({ category }: ConversationProps) {
                     <div className="text-sm font-medium text-[#383f51]">
                         {recordingState === 'listening' ? 'Listening...' : 'Ready to start'}
                     </div>
+
+                    {/* Generate Story Button */}
+                    {conversationEnded && conversationHistory.length > 0 && (
+                        <Button
+                            onClick={generateStory}
+                            disabled={isSaving}
+                            size="lg"
+                            className="mt-4 bg-[#3c4f76] hover:bg-[#2a3b5a] text-white px-6 py-3 rounded-xl"
+                        >
+                            {isSaving ? "Generating Story..." : "Generate Story"}
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

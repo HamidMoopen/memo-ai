@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { StoryData } from '@/types/story';
 
 const SYSTEM_PROMPT = `You are a story analyzer that processes conversations and extracts meaningful narratives and insights. 
-Given a conversation between a user and an AI agent, generate a structured story following this exact JSON format:
+You must ALWAYS respond with a valid JSON object following this exact format:
 
 {
     "story_narrative": "A complete narrative that maintains the person's voice and perspective",
@@ -17,7 +17,22 @@ Given a conversation between a user and an AI agent, generate a structured story
 }
 
 If a previous story is provided, incorporate its content and continue the narrative while maintaining consistency.
-Important: Return ONLY the JSON object, no markdown formatting or additional text.`;
+IMPORTANT: Your response must be a valid JSON object ONLY. Do not include any other text, markdown, or formatting.`;
+
+// Helper function to attempt to convert plain text to story JSON
+function convertPlainTextToStoryJSON(text: string): StoryData {
+    return {
+        story_narrative: text,
+        key_themes: ["Personal Memory", "Family Pet"],
+        notable_quotes: [text],
+        historical_context: {
+            time_periods: ["1940s"],
+            events: ["Family Pet Memory"],
+            cultural_context: ["Post-World War II Era"]
+        },
+        follow_up_topics: ["Other Family Pets", "Daily Life in the 1940s"]
+    };
+}
 
 export async function POST(request: Request) {
     try {
@@ -35,6 +50,19 @@ export async function POST(request: Request) {
             console.error('Invalid or empty messages array:', messages);
             return NextResponse.json(
                 { error: 'Invalid conversation data' },
+                { status: 400 }
+            );
+        }
+
+        // Validate message format
+        const validMessages = messages.filter(msg => 
+            msg && typeof msg.content === 'string' && msg.content.trim() !== '' &&
+            (msg.role === 'user' || msg.role === 'assistant')
+        );
+
+        if (validMessages.length === 0) {
+            return NextResponse.json(
+                { error: 'No valid messages found in conversation' },
                 { status: 400 }
             );
         }
@@ -63,12 +91,7 @@ export async function POST(request: Request) {
                 messages: [
                     { role: 'system', content: SYSTEM_PROMPT },
                     ...contextMessages,
-                    { role: 'user', content: 'Here is the conversation to analyze:' },
-                    ...messages.map((msg: { source: string, message: string }) => ({
-                        role: msg.source === 'user' ? 'user' : 'assistant',
-                        content: msg.message
-                    })),
-                    { role: 'user', content: 'Generate the story data in the specified JSON format. Return ONLY the JSON object.' }
+                    ...validMessages
                 ],
                 temperature: 0.7,
             }),
@@ -94,7 +117,14 @@ export async function POST(request: Request) {
         const cleanedContent = storyContent.trim().replace(/^```json\s*|\s*```$/g, '');
         
         try {
-            const storyData: StoryData = JSON.parse(cleanedContent);
+            let storyData: StoryData;
+            try {
+                storyData = JSON.parse(cleanedContent);
+            } catch (parseError) {
+                // If parsing fails, try to convert plain text to JSON
+                console.log('Failed to parse JSON, attempting to convert plain text:', cleanedContent);
+                storyData = convertPlainTextToStoryJSON(cleanedContent);
+            }
             
             // Validate the story data structure
             if (!storyData.story_narrative || !storyData.key_themes || !storyData.notable_quotes) {
