@@ -110,7 +110,7 @@ function convertResponseToStoryJSON(text: string): StoryData {
     };
 }
 
-export const maxDuration = 300; // Set max duration to 300 seconds (5 minutes)
+export const maxDuration = 60; // Set max duration to 60 seconds (Vercel hobby plan limit)
 export const dynamic = 'force-dynamic'; // Disable static optimization
 
 export async function POST(request: Request) {
@@ -166,7 +166,7 @@ export async function POST(request: Request) {
 
         // Set a timeout for the OpenAI request
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 240000); // 4 minute timeout
+        const timeout = setTimeout(() => controller.abort(), 50000); // 50 second timeout to allow for processing time
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
