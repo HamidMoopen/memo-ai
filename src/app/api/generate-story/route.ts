@@ -2,35 +2,111 @@ import { NextResponse } from 'next/server';
 import type { StoryData } from '@/types/story';
 
 const SYSTEM_PROMPT = `You are a story analyzer that processes conversations and extracts meaningful narratives and insights. 
-You must ALWAYS respond with a valid JSON object following this exact format:
+Based on the user's messages ONLY (ignore any AI responses), provide a structured response with the following sections:
 
-{
-    "story_narrative": "A complete narrative that maintains the person's voice and perspective",
-    "key_themes": ["Theme 1", "Theme 2", "etc"],
-    "notable_quotes": ["Quote 1", "Quote 2", "etc"],
-    "historical_context": {
-        "time_periods": ["Period 1", "Period 2"],
-        "events": ["Event 1", "Event 2"],
-        "cultural_context": ["Context 1", "Context 2"]
-    },
-    "follow_up_topics": ["Topic 1", "Topic 2", "etc"]
-}
+1. Story Narrative:
+   - Write a complete narrative that maintains the person's voice and perspective
+   - Focus on their direct experiences and memories
+   - Keep the tone personal and authentic
 
-If a previous story is provided, incorporate its content and continue the narrative while maintaining consistency.
-IMPORTANT: Your response must be a valid JSON object ONLY. Do not include any other text, markdown, or formatting.`;
+2. Key Themes (2-3):
+   - List the major recurring themes from their story
+   - Examples: Family, Loss, Resilience, Career, etc.
 
-// Helper function to attempt to convert plain text to story JSON
-function convertPlainTextToStoryJSON(text: string): StoryData {
+3. Notable Quotes (1-2):
+   - Extract direct, meaningful quotes from their story
+   - Choose quotes that capture significant moments or emotions
+
+4. Historical Context:
+   Time Periods:
+   - List specific years or decades mentioned
+   - Include general time periods relevant to their story
+
+   Events:
+   - List major personal events from their story
+   - Include relevant historical events they mentioned
+
+   Cultural Context:
+   - Note cultural elements from their story
+   - Include societal context of their experiences
+
+5. Follow-up Topics (2-3):
+   - Suggest natural conversation topics based on their story
+   - Focus on areas they might want to elaborate on
+
+Format each section clearly and ensure all sections are filled out. If certain information isn't explicitly mentioned, make reasonable inferences based on the context provided, but stay true to their story.
+
+If a previous story is provided, incorporate its content and continue the narrative while maintaining consistency.`;
+
+// Helper function to convert OpenAI's text response to our story format
+function convertResponseToStoryJSON(text: string): StoryData {
+    // Split the text into sections based on numbered headers
+    const sections = text.split(/\d+\.\s+/);
+    
+    // Remove any empty sections
+    const nonEmptySections = sections.filter(s => s.trim());
+
+    // Extract narrative (first section)
+    const narrativeSection = nonEmptySections[0] || '';
+    const narrative = narrativeSection
+        .replace(/Story Narrative:?\s*/i, '')
+        .trim();
+
+    // Extract themes (second section)
+    const themesSection = nonEmptySections[1] || '';
+    const themes = themesSection
+        .replace(/Key Themes.*?:/i, '')
+        .split(/[,\n]/)
+        .map(t => t.trim())
+        .filter(t => t && !t.includes('-'));
+
+    // Extract quotes (third section)
+    const quotesSection = nonEmptySections[2] || '';
+    const quotes = quotesSection
+        .replace(/Notable Quotes.*?:/i, '')
+        .split(/["\n]/)
+        .map(q => q.trim())
+        .filter(q => q && !q.includes('-'));
+
+    // Extract historical context (fourth section)
+    const historicalSection = nonEmptySections[3] || '';
+    
+    // Parse time periods
+    const timePeriodMatch = historicalSection.match(/Time Periods:([\s\S]*?)(?=Events:|$)/);
+    const timePeriods = timePeriodMatch 
+        ? timePeriodMatch[1].split(/[,\n]/).map(t => t.trim()).filter(t => t && !t.includes('-'))
+        : ['Recent Times'];
+
+    // Parse events
+    const eventsMatch = historicalSection.match(/Events:([\s\S]*?)(?=Cultural Context:|$)/);
+    const events = eventsMatch
+        ? eventsMatch[1].split(/[,\n]/).map(e => e.trim()).filter(e => e && !e.includes('-'))
+        : ['Personal Events'];
+
+    // Parse cultural context
+    const culturalMatch = historicalSection.match(/Cultural Context:([\s\S]*?)(?=\d|$)/);
+    const culturalContext = culturalMatch
+        ? culturalMatch[1].split(/[,\n]/).map(c => c.trim()).filter(c => c && !c.includes('-'))
+        : ['Contemporary Culture'];
+
+    // Extract follow-up topics (fifth section)
+    const topicsSection = nonEmptySections[4] || '';
+    const followUpTopics = topicsSection
+        .replace(/Follow-up Topics.*?:/i, '')
+        .split(/[,\n]/)
+        .map(t => t.trim())
+        .filter(t => t && !t.includes('-'));
+
     return {
-        story_narrative: text,
-        key_themes: ["Personal Memory", "Family Pet"],
-        notable_quotes: [text],
+        story_narrative: narrative,
+        key_themes: themes.length > 0 ? themes : ['Personal Growth'],
+        notable_quotes: quotes.length > 0 ? quotes : ['Memorable moment'],
         historical_context: {
-            time_periods: ["1940s"],
-            events: ["Family Pet Memory"],
-            cultural_context: ["Post-World War II Era"]
+            time_periods: timePeriods,
+            events: events,
+            cultural_context: culturalContext
         },
-        follow_up_topics: ["Other Family Pets", "Daily Life in the 1940s"]
+        follow_up_topics: followUpTopics.length > 0 ? followUpTopics : ['Further Discussion']
     };
 }
 
@@ -114,29 +190,15 @@ export async function POST(request: Request) {
         }
 
         const storyContent = data.choices[0].message.content;
-        const cleanedContent = storyContent.trim().replace(/^```json\s*|\s*```$/g, '');
+        const storyData = convertResponseToStoryJSON(storyContent);
         
-        try {
-            let storyData: StoryData;
-            try {
-                storyData = JSON.parse(cleanedContent);
-            } catch (parseError) {
-                // If parsing fails, try to convert plain text to JSON
-                console.log('Failed to parse JSON, attempting to convert plain text:', cleanedContent);
-                storyData = convertPlainTextToStoryJSON(cleanedContent);
-            }
-            
-            // Validate the story data structure
-            if (!storyData.story_narrative || !storyData.key_themes || !storyData.notable_quotes) {
-                console.error('Invalid story data structure:', storyData);
-                throw new Error('Invalid story data structure');
-            }
-
-            return NextResponse.json(storyData);
-        } catch (error) {
-            console.error('Failed to parse story data:', error, '\nContent:', cleanedContent);
-            throw new Error('Failed to parse story data from ChatGPT response');
+        // Validate the story data structure
+        if (!storyData.story_narrative || !storyData.key_themes || !storyData.notable_quotes) {
+            console.error('Invalid story data structure:', storyData);
+            throw new Error('Invalid story data structure');
         }
+
+        return NextResponse.json(storyData);
     } catch (error) {
         console.error('Error generating story:', error);
         return NextResponse.json(

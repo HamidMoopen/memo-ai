@@ -129,9 +129,12 @@ export function Conversation({ category }: ConversationProps) {
         try {
             // Filter out invalid messages and format them correctly
             const validMessages = conversationHistory.filter(msg =>
-                msg && typeof msg.content === 'string' && msg.content.trim() !== ''
+                msg && 
+                typeof msg.content === 'string' && 
+                msg.content.trim() !== '' &&
+                msg.role === 'user'  // Only include user messages
             ).map(msg => ({
-                role: msg.role === 'user' ? 'user' : 'assistant',
+                role: 'user',
                 content: msg.content
             }));
 
