@@ -110,6 +110,9 @@ function convertResponseToStoryJSON(text: string): StoryData {
     };
 }
 
+export const maxDuration = 300; // Set max duration to 300 seconds (5 minutes)
+export const dynamic = 'force-dynamic'; // Disable static optimization
+
 export async function POST(request: Request) {
     try {
         const apiKey = process.env.OPENAI_API_KEY;
@@ -130,15 +133,20 @@ export async function POST(request: Request) {
             );
         }
 
-        // Validate message format
+        // Validate message format and filter out assistant messages
         const validMessages = messages.filter(msg => 
-            msg && typeof msg.content === 'string' && msg.content.trim() !== '' &&
-            (msg.role === 'user' || msg.role === 'assistant')
-        );
+            msg && 
+            typeof msg.content === 'string' && 
+            msg.content.trim() !== '' &&
+            msg.role === 'user'  // Only include user messages
+        ).map(msg => ({
+            role: 'user',
+            content: msg.content
+        }));
 
         if (validMessages.length === 0) {
             return NextResponse.json(
-                { error: 'No valid messages found in conversation' },
+                { error: 'No valid user messages found in conversation' },
                 { status: 400 }
             );
         }
@@ -156,49 +164,76 @@ export async function POST(request: Request) {
             });
         }
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-                model: 'gpt-4',
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    ...contextMessages,
-                    ...validMessages
-                ],
-                temperature: 0.7,
-            }),
-        });
+        // Set a timeout for the OpenAI request
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 240000); // 4 minute timeout
 
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('OpenAI API error:', {
-                status: response.status,
-                statusText: response.statusText,
-                error: errorData
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4',
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        ...contextMessages,
+                        ...validMessages
+                    ],
+                    temperature: 0.7,
+                }),
+                signal: controller.signal
             });
-            throw new Error(`OpenAI API error: ${response.statusText}`);
-        }
 
-        const data = await response.json();
-        if (!data.choices?.[0]?.message?.content) {
-            console.error('Invalid response from OpenAI:', data);
-            throw new Error('Invalid response format from OpenAI');
-        }
+            clearTimeout(timeout);
 
-        const storyContent = data.choices[0].message.content;
-        const storyData = convertResponseToStoryJSON(storyContent);
-        
-        // Validate the story data structure
-        if (!storyData.story_narrative || !storyData.key_themes || !storyData.notable_quotes) {
-            console.error('Invalid story data structure:', storyData);
-            throw new Error('Invalid story data structure');
-        }
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error('OpenAI API error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorData
+                });
+                return NextResponse.json(
+                    { error: `OpenAI API error: ${response.statusText}` },
+                    { status: response.status }
+                );
+            }
 
-        return NextResponse.json(storyData);
+            const data = await response.json();
+            if (!data.choices?.[0]?.message?.content) {
+                console.error('Invalid response from OpenAI:', data);
+                return NextResponse.json(
+                    { error: 'Invalid response format from OpenAI' },
+                    { status: 500 }
+                );
+            }
+
+            const storyContent = data.choices[0].message.content;
+            const storyData = convertResponseToStoryJSON(storyContent);
+            
+            // Validate the story data structure
+            if (!storyData.story_narrative || !storyData.key_themes || !storyData.notable_quotes) {
+                console.error('Invalid story data structure:', storyData);
+                return NextResponse.json(
+                    { error: 'Failed to parse story data' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json(storyData);
+        } catch (error: any) {
+            clearTimeout(timeout);
+            if (error.name === 'AbortError') {
+                return NextResponse.json(
+                    { error: 'Request timed out while generating story' },
+                    { status: 504 }
+                );
+            }
+            throw error;
+        }
     } catch (error) {
         console.error('Error generating story:', error);
         return NextResponse.json(
