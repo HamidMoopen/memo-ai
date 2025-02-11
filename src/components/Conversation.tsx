@@ -389,7 +389,7 @@ export function Conversation({ category }: ConversationProps) {
                                 ${isSaved 
                                     ? 'bg-green-600 hover:bg-green-700'
                                     : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'}
-                                text-white
+                                text-white mb-4
                             `}
                         >
                             <span className={`
@@ -407,6 +407,17 @@ export function Conversation({ category }: ConversationProps) {
                                     <Check className="w-6 h-6" />
                                 </span>
                             )}
+                        </Button>
+
+                        <Button
+                            onClick={() => router.push('/dashboard/chapters/3')}
+                            className="
+                                w-full py-6 rounded-2xl text-lg
+                                bg-[#3c4f76] hover:bg-[#2a3b5a]
+                                text-white transition-all duration-300 ease-in-out
+                            "
+                        >
+                            Full Story
                         </Button>
                     </div>
                 </div>
