@@ -25,12 +25,15 @@ export default function ChaptersPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-memory-cream">
-            <DashboardHeader title="Life Chapters" description="Organize your life story into chapters" />
-            <div className="container mx-auto px-8 py-12">
-                <div className="mb-10 flex justify-end">
+        <div>
+            <DashboardHeader
+                title="Life Chapters"
+                description="Organize your life story into chapters"
+            />
+            <div className="container mx-auto px-8 py-8">
+                <div className="mb-8 flex justify-end">
                     <Button
-                        className="bg-memory-purple hover:bg-memory-purple-light text-white text-lg px-8 py-6 rounded-2xl"
+                        className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white text-lg px-8 py-6 rounded-2xl"
                     >
                         <Plus className="mr-3 h-6 w-6" /> Add New Chapter
                     </Button>
@@ -38,13 +41,13 @@ export default function ChaptersPage() {
 
                 <div className="grid gap-8">
                     {mockChapters.map((chapter) => (
-                        <Card key={chapter.id} className="hover:shadow-xl transition-shadow p-8 rounded-3xl border-2">
+                        <Card key={chapter.id} className="hover:shadow-lg transition-shadow p-8 rounded-3xl border-2 border-gray-100">
                             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-6">
                                 <div>
-                                    <CardTitle className="text-3xl mb-4 text-memory-purple font-serif">
+                                    <CardTitle className="text-3xl mb-4 text-[#3c4f76] font-bold">
                                         {chapter.title}
                                     </CardTitle>
-                                    <div className="flex items-center text-gray-600 text-lg">
+                                    <div className="flex items-center text-[#383f51] text-lg">
                                         <CalendarDays className="mr-3 h-5 w-5" />
                                         {chapter.date}
                                         <MessageSquare className="ml-6 mr-3 h-5 w-5" />
@@ -54,20 +57,20 @@ export default function ChaptersPage() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-memory-purple p-4 hover:bg-memory-cream rounded-xl"
+                                    className="text-[#3c4f76] p-4 hover:bg-[#faf9f6] rounded-xl"
                                 >
                                     <ChevronRight className="h-8 w-8" />
                                 </Button>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+                                <p className="text-xl text-[#383f51]/80 mb-6 leading-relaxed">
                                     {chapter.description}
                                 </p>
                                 <div className="flex flex-wrap gap-3">
                                     {chapter.topics.map((topic) => (
                                         <span
                                             key={topic}
-                                            className="px-6 py-2 rounded-full bg-memory-purple/10 text-memory-purple text-lg font-medium"
+                                            className="px-6 py-2 rounded-full bg-[#3c4f76]/10 text-[#3c4f76] text-lg font-medium"
                                         >
                                             {topic}
                                         </span>

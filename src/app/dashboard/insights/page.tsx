@@ -32,11 +32,12 @@ const mockRecentStories = [
 
 export default function InsightsPage() {
     return (
-        <div className="min-h-screen bg-memory-cream">
-            <DashboardHeader title="Life Story Insights" description="Track and analyze your life story progress" />
-
-            <div className="container mx-auto px-8 py-12">
-
+        <div>
+            <DashboardHeader
+                title="Life Story Insights"
+                description="Track and analyze your life story progress"
+            />
+            <div className="container mx-auto px-8 py-8">
                 {/* Stats Grid */}
                 <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-12">
                     {[
@@ -65,13 +66,13 @@ export default function InsightsPage() {
                             icon: Star
                         }
                     ].map((stat) => (
-                        <div key={stat.title} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                        <div key={stat.title} className="bg-white p-8 rounded-3xl shadow hover:shadow-lg transition-shadow">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-medium text-gray-600">{stat.title}</h3>
-                                <stat.icon className="w-6 h-6 text-memory-purple/60" />
+                                <h3 className="text-lg font-medium text-[#383f51]">{stat.title}</h3>
+                                <stat.icon className="w-6 h-6 text-[#3c4f76]/60" />
                             </div>
-                            <div className="text-3xl font-bold text-memory-purple">{stat.value}</div>
-                            <p className="text-base text-gray-500 mt-2">{stat.change}</p>
+                            <div className="text-3xl font-bold text-[#3c4f76]">{stat.value}</div>
+                            <p className="text-base text-[#383f51]/80 mt-2">{stat.change}</p>
                         </div>
                     ))}
                 </div>
@@ -79,37 +80,37 @@ export default function InsightsPage() {
                 {/* Charts and Recent Stories */}
                 <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
                     {/* Topic Distribution */}
-                    <div className="bg-white p-8 rounded-2xl shadow-lg">
+                    <div className="bg-white p-8 rounded-3xl shadow">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-serif text-memory-purple">Topic Distribution</h2>
-                            <p className="text-lg text-gray-600 mt-2">Most frequently discussed subjects</p>
+                            <h2 className="text-2xl font-bold text-[#3c4f76]">Topic Distribution</h2>
+                            <p className="text-lg text-[#383f51]/80 mt-2">Most frequently discussed subjects</p>
                         </div>
                         <TopicChart data={mockTopicStats} />
                     </div>
 
                     {/* Recent Stories */}
-                    <div className="bg-white p-8 rounded-2xl shadow-lg">
+                    <div className="bg-white p-8 rounded-3xl shadow">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-serif text-memory-purple">Recent Stories</h2>
-                            <p className="text-lg text-gray-600 mt-2">Your latest recorded memories</p>
+                            <h2 className="text-2xl font-bold text-[#3c4f76]">Recent Stories</h2>
+                            <p className="text-lg text-[#383f51]/80 mt-2">Your latest recorded memories</p>
                         </div>
                         <div className="space-y-6">
                             {mockRecentStories.map((story) => (
                                 <div
                                     key={story.id}
-                                    className="p-6 rounded-xl border-2 border-gray-200 hover:bg-memory-cream transition-colors"
+                                    className="p-6 rounded-2xl border-2 border-gray-100 hover:bg-[#faf9f6] transition-colors"
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <h3 className="text-xl font-medium text-memory-purple">{story.title}</h3>
-                                            <p className="text-base text-gray-500 mt-1">
+                                            <h3 className="text-xl font-medium text-[#3c4f76]">{story.title}</h3>
+                                            <p className="text-base text-[#383f51]/80 mt-1">
                                                 {new Date(story.updatedAt).toLocaleDateString()}
                                             </p>
                                         </div>
                                         <Link href={`/story/${story.id}`}>
                                             <Button
                                                 variant="ghost"
-                                                className="hover:text-memory-purple p-4"
+                                                className="hover:text-[#3c4f76] p-4"
                                             >
                                                 <ChevronRight className="w-6 h-6" />
                                             </Button>

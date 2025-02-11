@@ -34,22 +34,22 @@ export function RecordingInterface({ category }: RecordingInterfaceProps) {
         <div className="relative py-8">
           <button
             onClick={previousQuestion}
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center transition-colors hover:bg-white/20"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-[#3c4f76] flex items-center justify-center transition-all duration-300 hover:bg-[#2a3b5a]"
             aria-label="Previous question"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-6 h-6 text-white" />
           </button>
 
-          <div className="text-2xl font-serif px-16 min-h-[4rem] flex items-center justify-center">
+          <div className="text-2xl font-bold text-[#3c4f76] px-16 min-h-[4rem] flex items-center justify-center">
             {categoryQuestions[currentQuestion]}
           </div>
 
           <button
             onClick={nextQuestion}
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center transition-colors hover:bg-white/20"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-[#3c4f76] flex items-center justify-center transition-all duration-300 hover:bg-[#2a3b5a]"
             aria-label="Next question"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-6 h-6 text-white" />
           </button>
         </div>
 
@@ -59,9 +59,8 @@ export function RecordingInterface({ category }: RecordingInterfaceProps) {
             <button
               key={index}
               onClick={() => setCurrentQuestion(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentQuestion ? "bg-memory-orange" : "bg-white/30 hover:bg-white/50"
-              }`}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentQuestion ? "bg-[#3c4f76]" : "bg-[#3c4f76]/20 hover:bg-[#3c4f76]/40"
+                }`}
               aria-label={`Go to question ${index + 1}`}
             />
           ))}

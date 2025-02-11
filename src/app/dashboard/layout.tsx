@@ -20,20 +20,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-memory-cream">
+    <div className="min-h-screen bg-[#faf9f6]">
       {/* Top Navigation */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-8 py-4">
           <nav className="flex items-center justify-between">
             <Link
               href="/dashboard"
-              className="text-2xl font-serif font-bold text-memory-purple"
+              className="text-2xl font-bold text-[#3c4f76]"
             >
               Eterna
             </Link>
             <Link
               href="/"
-              className="text-memory-purple hover:text-memory-purple-light transition-colors"
+              className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors"
             >
               Sign Out
             </Link>
@@ -50,7 +50,7 @@ export default function DashboardLayout({
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-xl hover:bg-memory-cream hover:text-memory-purple transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 text-[#383f51] rounded-2xl hover:bg-[#faf9f6] hover:text-[#3c4f76] transition-colors"
                   >
                     <item.icon className="w-5 h-5" />
                     {item.label}
