@@ -1,25 +1,63 @@
 'use client';
+
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
     BookOpen,
     Mic,
-    Clock,
-    PlusCircle,
     ChartBarBig
 } from "lucide-react";
 import { DashboardHeader } from "./components/DashboardHeader";
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { supabase } from '@/lib/supabase';
+
+interface UserProfile {
+    full_name: string;
+    email: string;
+}
 
 export default function DashboardPage() {
     const pathname = usePathname();
     const { addToHistory } = useNavigation();
+    const router = useRouter();
+    const [user, setUser] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         addToHistory(pathname);
-    }, [pathname, addToHistory]);
+
+        async function getUser() {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+
+            if (!authUser) {
+                router.push('/login');
+                return;
+            }
+
+            // Get user profile from users table
+            const { data: profile } = await supabase
+                .from('users')
+                .select('full_name, email')
+                .eq('id', authUser.id)
+                .single();
+
+            if (profile) {
+                setUser(profile);
+            }
+            setLoading(false);
+        }
+
+        getUser();
+    }, [pathname, addToHistory, router]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center">
+                <div className="text-[#3c4f76]">Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <div>

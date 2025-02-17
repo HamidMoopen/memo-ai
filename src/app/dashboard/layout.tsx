@@ -8,10 +8,12 @@ import {
   LogOut,
   ChartBarBig,
   Menu,
-  X
+  X,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 const sidebarItems = [
   { icon: Home, label: "Overview", href: "/dashboard" },
@@ -25,7 +27,19 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // If not authenticated, redirect to login
+  if (status === "unauthenticated") {
+    window.location.href = '/login';
+    return null;
+  }
+
+  // Show loading state while checking session
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#faf9f6]">
@@ -40,6 +54,23 @@ export default function DashboardLayout({
               Eterna
             </Link>
 
+            {/* User Profile & Sign Out - Desktop */}
+            <div className="hidden lg:flex items-center gap-4">
+              {session?.user && (
+                <div className="flex items-center gap-2 text-[#3c4f76]">
+                  <User className="w-5 h-5" />
+                  <span>{session.user.name || session.user.email}</span>
+                </div>
+              )}
+              <Button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                variant="ghost"
+                className="text-[#3c4f76] hover:text-[#2a3b5a]"
+              >
+                Sign Out
+              </Button>
+            </div>
+
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
@@ -53,14 +84,6 @@ export default function DashboardLayout({
                 <Menu className="h-6 w-6 text-[#3c4f76]" />
               )}
             </Button>
-
-            {/* Desktop Sign Out */}
-            <Link
-              href="/"
-              className="hidden lg:block text-[#3c4f76] hover:text-[#2a3b5a] transition-colors"
-            >
-              Sign Out
-            </Link>
           </nav>
         </div>
       </header>

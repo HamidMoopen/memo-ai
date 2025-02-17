@@ -1,7 +1,9 @@
+'use client'
+
 import './globals.css'
-import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from "next/font/google";
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { SessionProvider } from "next-auth/react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,11 +15,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: 'Eterna',
-  description: 'Capture and preserve your stories',
-}
-
 export default function RootLayout({
   children,
 }: {
@@ -26,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
-        <NavigationProvider>
-          {children}
-        </NavigationProvider>
+        <SessionProvider>
+          <NavigationProvider>
+            {children}
+          </NavigationProvider>
+        </SessionProvider>
       </body>
     </html>
   )

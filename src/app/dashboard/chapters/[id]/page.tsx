@@ -56,7 +56,7 @@ export default function ChapterPage() {
     const router = useRouter();
     const params = useParams();
     const chapterId = Number(params.id);
-    
+
     const chapter = mockChapters.find(c => c.id === chapterId);
 
     if (!chapter) {
