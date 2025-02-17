@@ -7,65 +7,33 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function SignUp() {
-    const searchParams = useSearchParams();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-        email: searchParams.get('email') || '',
-        name: searchParams.get('name') || '',
-        phone: '',
+        email: '',
         password: '',
-        confirmPassword: '',
+        name: '',  // We'll store this in user_metadata
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
         setIsLoading(true);
-
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords don't match");
-            setIsLoading(false);
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setError("Password must be at least 6 characters");
-            setIsLoading(false);
-            return;
-        }
+        setError(null);
 
         try {
-            // Sign up the user with Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            // Sign up using Supabase Auth with metadata
+            const { data, error } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
                     data: {
                         full_name: formData.name,
-                        phone: formData.phone,
                     }
                 }
             });
 
-            if (authError) throw authError;
-
-            // Create user profile in users table
-            const { data, error: profileError } = await supabase
-                .from('users')
-                .insert([
-                    {
-                        id: authData.user?.id,
-                        email: formData.email,
-                        full_name: formData.name,
-                        phone: formData.phone,
-                    }
-                ])
-                .select()
-                .single();
-
-            if (profileError) throw profileError;
+            if (error) throw error;
 
             router.push('/dashboard');
         } catch (error: any) {
@@ -96,9 +64,7 @@ export default function SignUp() {
                             id="email"
                             value={formData.email}
                             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                            className={`w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51] ${searchParams.get('email') ? 'bg-gray-50' : ''
-                                }`}
-                            readOnly={!!searchParams.get('email')}
+                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
                             required
                         />
                     </div>
@@ -118,20 +84,6 @@ export default function SignUp() {
                     </div>
 
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-[#383f51] mb-2">
-                            Phone Number
-                        </label>
-                        <input
-                            type="tel"
-                            id="phone"
-                            value={formData.phone}
-                            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
-                            required
-                        />
-                    </div>
-
-                    <div>
                         <label htmlFor="password" className="block text-sm font-medium text-[#383f51] mb-2">
                             Password
                         </label>
@@ -140,21 +92,6 @@ export default function SignUp() {
                             id="password"
                             value={formData.password}
                             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
-                            required
-                            minLength={6}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#383f51] mb-2">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                             className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
                             required
                             minLength={6}

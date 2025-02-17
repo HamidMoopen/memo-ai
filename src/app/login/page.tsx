@@ -1,10 +1,10 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -15,8 +15,26 @@ export default function LoginPage() {
         password: '',
     });
 
-    const handleGoogleSignIn = () => {
-        signIn("google", { callbackUrl: "/dashboard" });
+    const handleGoogleSignIn = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    skipBrowserRedirect: false
+                }
+            });
+
+            if (error) throw error;
+
+        } catch (error: any) {
+            console.error('Google sign in error:', error);
+            setError(error.message || 'An error occurred during Google sign in');
+            setIsLoading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -25,20 +43,19 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            const result = await signIn("credentials", {
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email: formData.email,
                 password: formData.password,
-                redirect: false,
             });
 
-            if (result?.error) {
-                setError(result.error);
-                return;
-            }
+            if (error) throw error;
 
-            router.push('/dashboard');
+            if (data?.user) {
+                router.push('/dashboard');
+                router.refresh();
+            }
         } catch (error: any) {
-            setError('An error occurred during sign in');
+            setError(error.message || 'An error occurred during sign in');
         } finally {
             setIsLoading(false);
         }
@@ -135,7 +152,7 @@ export default function LoginPage() {
                         disabled={isLoading}
                         className="w-full bg-[#3c4f76] hover:bg-[#2a3b5a] text-white text-base py-6 rounded-2xl transition-all duration-300"
                     >
-                        {isLoading ? 'Signing in...' : 'Sign In'}
+                        {isLoading ? 'Signing In...' : 'Sign In'}
                     </Button>
                 </form>
 
