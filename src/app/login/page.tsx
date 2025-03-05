@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { signIn, type LoginFormData, type LoginResult } from './actions';
 import { createClient } from "@/lib/supabase/client";
-import { useUser } from '@supabase/auth-helpers-react'
 export default function LoginPage() {
     const supabase = createClient()
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);

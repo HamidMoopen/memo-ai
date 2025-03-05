@@ -14,6 +14,7 @@ export default function SignUp() {
         email: '',
         password: '',
         name: '',  // We'll store this in user_metadata
+        phone: '',  // Add phone field
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +29,7 @@ export default function SignUp() {
                 options: {
                     data: {
                         full_name: formData.name,
+                        phone: formData.phone,
                     }
                 }
             });
@@ -81,6 +83,22 @@ export default function SignUp() {
                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                             className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
                             required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-[#383f51] mb-2">
+                            Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
+                            required
+                            pattern="[0-9]{10}"
+                            placeholder="1234567890"
                         />
                     </div>
 

@@ -1,12 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
     BookOpen,
     Mic,
-    Clock,
-    PlusCircle,
     ChartBarBig
 } from "lucide-react";
 import { DashboardHeader } from "./components/DashboardHeader";
@@ -24,17 +21,12 @@ export default function DashboardPage() {
         addToHistory(pathname);
 
         const checkSession = async () => {
-            // Get current session
             const { data: { user } } = await supabase.auth.getUser();
-
             if (!user) {
                 router.push('/login');
-            } else {
-                // Get user's name from metadata
-                const fullName = user.user_metadata.full_name;
-                const firstName = fullName?.split(' ')[0] || 'there';
-                setUserName(firstName);
+                return;
             }
+            setUserName(user.user_metadata.full_name);
         };
 
         checkSession();
