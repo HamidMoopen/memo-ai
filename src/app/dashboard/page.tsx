@@ -1,30 +1,41 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
     BookOpen,
     Mic,
-    Clock,
-    PlusCircle,
     ChartBarBig
 } from "lucide-react";
 import { DashboardHeader } from "./components/DashboardHeader";
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { supabase } from "@/lib/supabase/client";
 
 export default function DashboardPage() {
     const pathname = usePathname();
     const { addToHistory } = useNavigation();
+    const router = useRouter();
+    const [userName, setUserName] = useState<string>('');
 
     useEffect(() => {
         addToHistory(pathname);
-    }, [pathname, addToHistory]);
+
+        const checkSession = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+            setUserName(user.user_metadata.full_name);
+        };
+
+        checkSession();
+    }, [pathname, addToHistory, router]);
 
     return (
         <div>
             <DashboardHeader
-                title="Welcome to Your Stories"
+                title={`Welcome, ${userName}!`}
                 description="Your life story, recorded and preserved"
             />
             <div className="py-8">
