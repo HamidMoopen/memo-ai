@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Mic, Pause, Play, ChevronLeft, ChevronDown, Copy, Square, X, Check } from 'lucide-react';
+import { Mic, Square, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { saveStory } from '@/app/actions/story';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -27,6 +27,9 @@ export function Conversation({ category }: ConversationProps) {
     const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
     const [currentStory, setCurrentStory] = useState<any>(null);
     const conversationRef = useRef<any>(null);
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [storyTitle, setStoryTitle] = useState('');
+    const [isGeneratingStory, setIsGeneratingStory] = useState(false);
 
     // Track recording state
     const [recordingState, setRecordingState] = useState<'idle' | 'listening'>('idle');
@@ -125,12 +128,15 @@ export function Conversation({ category }: ConversationProps) {
     };
 
     const generateStory = async () => {
+        setIsGeneratingStory(true);
         setIsSaving(true);
         try {
+            console.log('Starting story generation...');
+
             // Filter out invalid messages and format them correctly
             const validMessages = conversationHistory.filter(msg =>
-                msg && 
-                typeof msg.content === 'string' && 
+                msg &&
+                typeof msg.content === 'string' &&
                 msg.content.trim() !== '' &&
                 msg.role === 'user'  // Only include user messages
             ).map(msg => ({
@@ -175,24 +181,44 @@ export function Conversation({ category }: ConversationProps) {
             toast.error(error instanceof Error ? error.message : 'Failed to generate story');
         } finally {
             setIsSaving(false);
+            setIsGeneratingStory(false);
         }
     };
 
-    const saveStory = async () => {
+    const handleSaveClick = () => {
+        // Generate a default title from the first few words
+        const defaultTitle = currentStory?.story_narrative?.split(' ').slice(0, 5).join(' ') + '...' || 'My Story';
+        setStoryTitle(defaultTitle);
+        setShowSaveDialog(true);
+    };
+
+    const saveStoryToDatabase = async () => {
         setIsSaving(true);
         try {
-            // Simulate saving delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Use just the narrative text for content
+            const narrativeText = currentStory?.story_narrative || '';
+
+            const result = await saveStory({
+                title: storyTitle,
+                content: narrativeText,
+                category,
+            });
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
             setIsSaved(true);
-            toast.success('Story saved successfully');
-            
+            setShowSaveDialog(false);
+            toast.success('Your story has been saved');
+
             // Reset saved state after 2 seconds
             setTimeout(() => {
                 setIsSaved(false);
             }, 2000);
         } catch (error) {
             console.error('Error saving story:', error);
-            toast.error('Failed to save story');
+            toast.error('Failed to save your story');
         } finally {
             setIsSaving(false);
         }
@@ -384,12 +410,12 @@ export function Conversation({ category }: ConversationProps) {
                         </div>
 
                         <Button
-                            onClick={saveStory}
+                            onClick={saveStoryToDatabase}
                             disabled={isSaving || isSaved}
                             className={`
                                 w-full py-6 rounded-2xl text-lg relative
                                 transition-all duration-300 ease-in-out
-                                ${isSaved 
+                                ${isSaved
                                     ? 'bg-green-600 hover:bg-green-700'
                                     : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'}
                                 text-white mb-4
