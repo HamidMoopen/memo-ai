@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { signIn, type LoginFormData, type LoginResult } from './actions';
 import { createClient } from "@/lib/supabase/client";
+import { getRedirectUrl } from "@/lib/utils";
+
 export default function LoginPage() {
     const supabase = createClient()
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function LoginPage() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+                    redirectTo: getRedirectUrl("/auth/callback"),
                 },
             });
 
