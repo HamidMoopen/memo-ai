@@ -26,7 +26,7 @@ export default function LoginPage() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
+                    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
                 },
             });
 
@@ -76,6 +76,7 @@ export default function LoginPage() {
                     </div>
                 )}
 
+                {/* Google Sign In Button */}
                 <Button
                     type="button"
                     onClick={signInWithGoogle}
@@ -106,6 +107,7 @@ export default function LoginPage() {
                     </div>
                 </div>
 
+                {/* Email Sign In Form */}
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-[#383f51] mb-2">
