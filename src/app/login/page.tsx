@@ -25,21 +25,34 @@ export default function LoginPage() {
     async function signInWithGoogle() {
         setIsGoogleLoading(true);
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
+            // Get the current origin dynamically
+            const redirectUrl = getRedirectUrl("/auth/callback");
+            console.log("🔍 Sign in with Google initiated");
+            console.log("📍 Current URL:", window.location.href);
+            console.log("🔄 Redirect URL:", redirectUrl);
+
+            const { error, data } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: getRedirectUrl("/auth/callback"),
+                    redirectTo: redirectUrl,
                 },
             });
 
-            if (error) throw error;
+            console.log("📊 OAuth response data:", data);
+
+            if (error) {
+                console.error("❌ OAuth error:", error);
+                throw error;
+            }
+
+            console.log("✅ OAuth request successful");
         } catch (error: any) {
+            console.error("🚨 Sign in error:", error);
             setError({ error: 'unknown', message: 'Error signing in with Google' });
         } finally {
             setIsGoogleLoading(false);
         }
     }
-
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -56,6 +69,18 @@ export default function LoginPage() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const debugEnvironment = () => {
+        console.log({
+            windowLocation: typeof window !== 'undefined' ? window.location : 'No window',
+            origin: typeof window !== 'undefined' ? window.location.origin : 'No window',
+            redirectUrl: getRedirectUrl('/auth/callback'),
+            env: {
+                NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+                NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+            }
+        });
     };
 
     return (
@@ -97,8 +122,6 @@ export default function LoginPage() {
                     )}
                     Sign in with Google
                 </Button>
-
-
 
                 <div className="relative my-8">
                     <div className="absolute inset-0 flex items-center">
@@ -156,6 +179,13 @@ export default function LoginPage() {
                         Sign up
                     </Link>
                 </p>
+
+                <button
+                    onClick={debugEnvironment}
+                    className="mt-4 text-xs text-gray-400 hover:text-gray-600"
+                >
+                    Debug Environment
+                </button>
             </div>
         </div>
     );

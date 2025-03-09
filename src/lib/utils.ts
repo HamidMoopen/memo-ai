@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getRedirectUrl(path: string): string {
-  return typeof window !== 'undefined'
+  const url = typeof window !== 'undefined'
     ? `${window.location.origin}${path}`
     : path;
+  
+  console.log("🔗 Generated redirect URL:", url);
+  return url;
 } 
