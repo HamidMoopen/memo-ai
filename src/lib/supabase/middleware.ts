@@ -35,10 +35,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow access to home page and public routes
+  // Allow access to public routes
   if (
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/signup") ||
     request.nextUrl.pathname.startsWith("/auth")
   ) {
     return supabaseResponse;
@@ -49,6 +50,13 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated users attempting to access the sign-in page to the dashboard page
+  if (user && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup"))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

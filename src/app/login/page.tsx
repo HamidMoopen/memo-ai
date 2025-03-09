@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { signIn, type LoginFormData, type LoginResult } from './actions';
 import { createClient } from "@/lib/supabase/client";
+import { getRedirectUrl } from "@/lib/utils";
+
 export default function LoginPage() {
     const supabase = createClient()
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function LoginPage() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
+                    redirectTo: getRedirectUrl("/auth/callback"),
                 },
             });
 
@@ -76,6 +78,7 @@ export default function LoginPage() {
                     </div>
                 )}
 
+                {/* Google Sign In Button */}
                 <Button
                     type="button"
                     onClick={signInWithGoogle}
@@ -106,6 +109,7 @@ export default function LoginPage() {
                     </div>
                 </div>
 
+                {/* Email Sign In Form */}
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-[#383f51] mb-2">
