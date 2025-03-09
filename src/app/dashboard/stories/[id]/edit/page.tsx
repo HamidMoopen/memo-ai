@@ -8,9 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { DashboardHeader } from '../../../components/DashboardHeader'
-import { Card, CardContent } from "../../../../../components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 
-export default function EditStoryPage({ params }: { params: { id: string } }) {
+type tParams = Promise<{ id: string }>
+
+export default async function EditStoryPage(props: { params: tParams }) {
+    const { id } = await props.params;
     const router = useRouter()
     const [story, setStory] = useState<any>(null)
     const [title, setTitle] = useState('')
@@ -21,10 +24,13 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
 
     useEffect(() => {
         async function fetchStory() {
+            // Extract the ID from params
+            const storyId = id
+
             const { data, error } = await supabase
                 .from('stories')
                 .select('*')
-                .eq('id', params.id)
+                .eq('id', storyId)
                 .single()
 
             if (error) {
@@ -41,9 +47,14 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
         }
 
         fetchStory()
-    }, [params.id, router, supabase])
+    }, [id, router, supabase])
 
     const handleSave = async () => {
+        if (!title.trim() || !content.trim()) {
+            toast.error('Title and content are required')
+            return
+        }
+
         setIsSaving(true)
         try {
             const { error } = await supabase
@@ -51,17 +62,19 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
                 .update({
                     title,
                     content,
-                    updated_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 })
-                .eq('id', params.id)
+                .eq('id', id)
 
-            if (error) throw error
+            if (error) {
+                throw new Error(error.message)
+            }
 
-            toast.success('Your story has been updated')
-            router.push(`/dashboard/stories/${params.id}`)
-        } catch (error) {
+            toast.success('Story updated successfully')
+            router.push(`/dashboard/stories/${id}`)
+        } catch (error: any) {
             console.error('Error updating story:', error)
-            toast.error('Failed to update the story')
+            toast.error('Failed to update story')
         } finally {
             setIsSaving(false)
         }
@@ -69,27 +82,32 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
 
     if (isLoading) {
         return (
-            <div>
+            <div className="container mx-auto py-8 px-4 md:px-8">
                 <DashboardHeader
-                    title="Edit Story"
-                    description="Loading story details..."
+                    title="Loading..."
+                    backLink="/dashboard/stories"
                 />
+                <div className="mt-8 flex justify-center">
+                    <div className="w-8 h-8 border-4 border-[#3c4f76] border-t-transparent rounded-full animate-spin"></div>
+                </div>
             </div>
         )
     }
 
     return (
-        <div>
+        <div className="container mx-auto py-8 px-4 md:px-8">
             <DashboardHeader
                 title="Edit Story"
-                description="Update your story details"
+                backLink={`/dashboard/stories/${id}`}
+                backLinkText="Back to Story"
             />
-            <div className="container mx-auto px-8 py-8">
-                <Card className="rounded-3xl shadow">
-                    <CardContent className="p-8">
+
+            <div className="mt-8">
+                <Card>
+                    <CardContent className="p-6">
                         <div className="space-y-6">
-                            <div>
-                                <label htmlFor="title" className="block text-lg font-medium text-[#3c4f76] mb-2">
+                            <div className="space-y-2">
+                                <label htmlFor="title" className="text-sm font-medium text-[#383f51]">
                                     Title
                                 </label>
                                 <Input
@@ -100,8 +118,8 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
                                 />
                             </div>
 
-                            <div>
-                                <label htmlFor="content" className="block text-lg font-medium text-[#3c4f76] mb-2">
+                            <div className="space-y-2">
+                                <label htmlFor="content" className="text-sm font-medium text-[#383f51]">
                                     Content
                                 </label>
                                 <Textarea
@@ -115,7 +133,7 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
                             <div className="flex justify-end space-x-4 pt-4">
                                 <Button
                                     variant="outline"
-                                    onClick={() => router.push(`/dashboard/stories/${params.id}`)}
+                                    onClick={() => router.push(`/dashboard/stories/${id}`)}
                                     className="text-[#3c4f76] border-2 border-[#3c4f76] hover:bg-[#3c4f76] hover:text-white px-6 py-3 rounded-xl"
                                 >
                                     Cancel
@@ -134,4 +152,4 @@ export default function EditStoryPage({ params }: { params: { id: string } }) {
             </div>
         </div>
     )
-} 
+}

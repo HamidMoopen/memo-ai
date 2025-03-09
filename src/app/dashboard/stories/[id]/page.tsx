@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, Calendar } from "lucide-react"
 import { StoryActions } from './StoryActions'
 
-export default async function StoryPage({ params }: { params: { id: string } }) {
+type tParams = Promise<{ id: string }>
+
+export default async function StoryPage(props: { params: tParams }) {
     // First, resolve the id parameter
-    const id = params.id
+    const { id } = await props.params
 
     const supabase = await createClient()
 
