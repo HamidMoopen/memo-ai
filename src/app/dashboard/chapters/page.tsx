@@ -1,6 +1,6 @@
 'use client';
 import { Plus, ChevronRight, CalendarDays, MessageSquare } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { useRouter } from "next/navigation";
@@ -40,22 +40,23 @@ export default function ChaptersPage() {
 
     return (
         <div>
-            <DashboardHeader
-                title="Life Chapters"
-                description="Organize your life story into chapters"
-            />
-            <div className="container mx-auto px-8 py-8">
-                <div className="mb-8 flex justify-end">
+            <div className="flex items-center justify-between">
+                <DashboardHeader
+                    title="Life Chapters"
+                    description="Organize your life story into chapters"
+                />
+                <div className="px-8">
                     <Button
                         className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white text-lg px-8 py-6 rounded-2xl"
                     >
                         <Plus className="mr-3 h-6 w-6" /> Add New Chapter
                     </Button>
                 </div>
-
+            </div>
+            <div className="container mx-auto px-8 py-8">
                 <div className="grid gap-8">
                     {mockChapters.map((chapter) => (
-                        <Card 
+                        <Card
                             key={chapter.id}
                             className="hover:shadow-lg transition-shadow p-8 rounded-3xl border-2 border-gray-100 cursor-pointer"
                             onClick={() => handleChapterClick(chapter.id)}

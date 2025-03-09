@@ -8,7 +8,8 @@ import {
   LogOut,
   ChartBarBig,
   Menu,
-  X
+  X,
+  BookMarked
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import { useState } from "react";
 const sidebarItems = [
   { icon: Home, label: "Overview", href: "/dashboard" },
   { icon: Mic, label: "Record", href: "/topics" },
+  { icon: BookMarked, label: "Stories", href: "/dashboard/stories" },
   { icon: BookOpen, label: "Chapters", href: "/dashboard/chapters" },
   { icon: ChartBarBig, label: "Insights", href: "/dashboard/insights" },
 ];
