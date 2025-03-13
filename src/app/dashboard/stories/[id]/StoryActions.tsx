@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Share2, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { deleteStory } from '@/app/actions/story'
 import { toast } from 'sonner'
@@ -16,6 +16,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface StoryActionsProps {
     storyId: string
@@ -50,6 +56,13 @@ export function StoryActions({ storyId }: StoryActionsProps) {
         }
     }
 
+    const handleShare = () => {
+        // Copy the URL to clipboard
+        const url = `${window.location.origin}/dashboard/stories/${storyId}`
+        navigator.clipboard.writeText(url)
+        toast.success('Link copied to clipboard')
+    }
+
     return (
         <>
             <div className="flex space-x-2">
@@ -62,6 +75,30 @@ export function StoryActions({ storyId }: StoryActionsProps) {
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit
                 </Button>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-[#3c4f76] border-2 border-[#3c4f76] hover:bg-[#3c4f76] hover:text-white rounded-xl"
+                        >
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl">
+                        <DropdownMenuItem onClick={handleShare} className="cursor-pointer">
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Copy Link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 <Button
                     variant="outline"
                     size="sm"

@@ -439,7 +439,7 @@ export function Conversation({ category }: ConversationProps) {
                         </Button>
 
                         <Button
-                            onClick={() => router.push('/dashboard/chapters/3')}
+                            onClick={() => router.push('/dashboard/stories')}
                             className="
                                 w-full py-6 rounded-2xl text-lg
                                 bg-[#3c4f76] hover:bg-[#2a3b5a]

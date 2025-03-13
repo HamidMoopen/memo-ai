@@ -69,7 +69,7 @@ export default function DashboardPage() {
                             icon: BookOpen,
                             title: "Browse Stories",
                             description: "View all your recorded stories",
-                            href: "/dashboard/chapters"
+                            href: "/dashboard/stories"
                         },
                         {
                             icon: Mic,
