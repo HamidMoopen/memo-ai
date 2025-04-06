@@ -17,7 +17,7 @@ import { useState } from "react";
 
 const sidebarItems = [
   { icon: Home, label: "Overview", href: "/dashboard" },
-  { icon: Mic, label: "Record", href: "/topics" },
+  { icon: Mic, label: "Record", href: "/call" },
   { icon: BookMarked, label: "Stories", href: "/dashboard/stories" },
   { icon: ChartBarBig, label: "Insights", href: "/dashboard/insights" },
   { icon: FolderInputIcon, label: "Publish", href: "/dashboard/publish" },

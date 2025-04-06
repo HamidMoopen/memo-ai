@@ -25,7 +25,7 @@ function StoryContent() {
                 <div className="max-w-3xl mx-auto">
                     <h1 className="text-2xl font-bold text-[#3c4f76] mb-4">Error</h1>
                     <p className="text-[#383f51]">Failed to load story data.</p>
-                    <Link href="/topics" className="text-[#3c4f76] mt-4 inline-block">
+                    <Link href="/call" className="text-[#3c4f76] mt-4 inline-block">
                         <ChevronLeft className="w-6 h-6 inline-block" /> Back to Topics
                     </Link>
                 </div>
@@ -37,7 +37,7 @@ function StoryContent() {
         <div className="min-h-screen bg-[#faf9f6] p-8">
             <div className="max-w-3xl mx-auto">
                 <div className="flex items-center mb-8">
-                    <Link href="/topics" className="text-[#3c4f76]">
+                    <Link href="/call" className="text-[#3c4f76]">
                         <ChevronLeft className="w-6 h-6" />
                     </Link>
                     <h1 className="text-2xl font-bold text-[#3c4f76] ml-4">Your Story</h1>

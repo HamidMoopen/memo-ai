@@ -21,7 +21,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
 
     const navigateBack = useCallback(() => {
         // Special case for topics page - always go to dashboard
-        if (pathname === '/topics') {
+        if (pathname === '/call') {
             router.push('/dashboard');
             return;
         }
