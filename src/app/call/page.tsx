@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { PhoneCall, Calendar, BookOpen, ChevronLeft } from "lucide-react"
+import { PhoneCall, Calendar, BookOpen, ChevronLeft, Mic } from "lucide-react"
 
 export default function StoryJournalPage() {
     const [isCallModalOpen, setIsCallModalOpen] = useState(false)
@@ -22,14 +22,6 @@ export default function StoryJournalPage() {
                     <div className="space-y-4">
                         <h2 className="text-4xl font-bold text-[#3c4f76]">Your Living Storybook</h2>
                         <p className="text-xl text-[#383f51]/80">Each week, we'll add a new story to your book.</p>
-                    </div>
-
-                    {/* Book illustration */}
-                    <div className="relative w-48 h-48 mx-auto mt-12">
-                        <div className="absolute inset-0 bg-[#3c4f76] rounded-r-lg rounded-b-lg transform rotate-6"></div>
-                        <div className="absolute inset-0 bg-[#faf9f6] border-2 border-[#3c4f76] rounded-r-lg rounded-b-lg -rotate-3 shadow-lg flex items-center justify-center">
-                            <span className="text-[#3c4f76] text-4xl font-serif">📓</span>
-                        </div>
                     </div>
 
                     {/* Journal-like interface */}
@@ -52,6 +44,22 @@ export default function StoryJournalPage() {
                                 <span className="text-[#3c4f76] font-bold">+</span>
                             </div>
                         </button>
+
+                        {/* Add a Story through our Agent */}
+                        <Link
+                            href="/topics"
+                            className="w-full mb-8 p-6 flex items-center justify-between bg-[#faf9f6] rounded-2xl border-2 border-[#3c4f76]/20 hover:border-[#3c4f76] transition-all duration-300 group"
+                        >
+                            <div className="flex items-center">
+                                <div className="w-14 h-14 rounded-full bg-[#3c4f76] flex items-center justify-center mr-4 group-hover:bg-[#2a3b5a] transition-colors">
+                                    <Mic className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="text-left">
+                                    <h3 className="text-xl font-bold text-[#3c4f76]">Add a Story through our site</h3>
+                                    <p className="text-[#383f51]/70">Record your story directly on our platform</p>
+                                </div>
+                            </div>
+                        </Link>
 
                         {/* Hear What I Shared Last Time */}
                         <Link
@@ -85,7 +93,6 @@ export default function StoryJournalPage() {
                             </div>
                         </Link>
                     </div>
-
 
                 </div>
             </div>
