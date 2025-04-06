@@ -9,7 +9,8 @@ import {
   ChartBarBig,
   Menu,
   X,
-  BookMarked
+  BookMarked,
+  FolderInputIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -19,6 +20,7 @@ const sidebarItems = [
   { icon: Mic, label: "Record", href: "/topics" },
   { icon: BookMarked, label: "Stories", href: "/dashboard/stories" },
   { icon: ChartBarBig, label: "Insights", href: "/dashboard/insights" },
+  { icon: FolderInputIcon, label: "Publish", href: "/dashboard/publish" },
 ];
 
 export default function DashboardLayout({
