@@ -31,7 +31,7 @@ export default async function Page({ params }: PageProps) {
               </Link>
               <div className="flex items-center gap-4">
                 <Link
-                  href="/topics"
+                  href="/call"
                   className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
                 >
                   Topics

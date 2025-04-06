@@ -97,7 +97,7 @@ export default function StoriesPage() {
                 />
                 <div className="px-8">
                     <Button
-                        onClick={() => router.push('/topics')}
+                        onClick={() => router.push('/call')}
                         className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white text-lg px-8 py-6 rounded-2xl"
                     >
                         <Plus className="mr-3 h-6 w-6" /> Record New Story
@@ -141,7 +141,7 @@ export default function StoriesPage() {
                         <BookMarked className="mx-auto h-12 w-12 text-[#3c4f76]/60 mb-4" />
                         <p className="text-xl text-[#383f51] mb-6">You haven't created any stories yet.</p>
                         <Button
-                            onClick={() => router.push('/topics')}
+                            onClick={() => router.push('/call')}
                             className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white px-6 py-3 rounded-xl"
                         >
                             Start Recording

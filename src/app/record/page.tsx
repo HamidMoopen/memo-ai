@@ -52,7 +52,7 @@ export default function RecordPage() {
     <div className="min-h-screen bg-[#faf9f6]">
       <div className="container mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-12">
-          <Link href="/topics" className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors">
+          <Link href="/call" className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors">
             <ChevronLeft className="w-8 h-8" />
           </Link>
           <h1 className="text-2xl font-bold text-[#3c4f76]">Eterna</h1>
@@ -104,8 +104,8 @@ export default function RecordPage() {
             <button
               onClick={toggleRecording}
               className={`${isRecording
-                  ? "bg-[#3c4f76] border-[#3c4f76]"
-                  : "bg-[#3c4f76] border-[#3c4f76]"
+                ? "bg-[#3c4f76] border-[#3c4f76]"
+                : "bg-[#3c4f76] border-[#3c4f76]"
                 } w-20 h-20 rounded-2xl border-2 text-white flex items-center justify-center transition-all duration-300 hover:bg-[#2a3b5a]`}
               aria-label={isRecording ? "Stop recording" : "Start recording"}
             >
