@@ -39,8 +39,7 @@ export default function TopicsPage() {
                 {row.map((topic) => (
                   <Link
                     key={topic}
-                    // href={`/record/${topic.toLowerCase().replace(/\s+/g, "-")}`}
-                    href={`/call`}
+                    href={`/record/${topic.toLowerCase().replace(/\s+/g, "-")}`}
                     className="w-64 h-16 flex items-center justify-center px-8 text-xl font-medium rounded-2xl border-2 border-[#3c4f76] text-[#3c4f76] hover:bg-[#3c4f76] hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg"
                   >
                     <span className="truncate">{topic}</span>
