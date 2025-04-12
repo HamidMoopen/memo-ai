@@ -1,8 +1,11 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ChevronLeft, Calendar, Clock, Phone } from "lucide-react"
+import { Calendar, Clock, Phone } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
+import { useNavigation } from "@/contexts/NavigationContext"
+import { usePathname } from "next/navigation"
 
 export default function SchedulePage() {
     const [name, setName] = useState("")
@@ -12,6 +15,13 @@ export default function SchedulePage() {
     const [frequency, setFrequency] = useState("weekly")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
+    const pathname = usePathname();
+    const { addToHistory } = useNavigation();
+
+    useEffect(() => {
+        // Add current path to navigation history
+        addToHistory(pathname);
+    }, [pathname, addToHistory]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -39,9 +49,7 @@ export default function SchedulePage() {
         <div className="min-h-screen bg-[#faf9f6]">
             <div className="container mx-auto px-8 py-8">
                 <div className="flex items-center justify-between mb-12">
-                    <Link href="/call" className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors">
-                        <ChevronLeft className="w-8 h-8" />
-                    </Link>
+                    <BackButton />
                     <h1 className="text-2xl font-bold text-[#3c4f76]">Eterna</h1>
                     <div className="w-8" />
                 </div>

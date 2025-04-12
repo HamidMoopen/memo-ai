@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
+import { useEffect } from "react";
+import { useNavigation } from "@/contexts/NavigationContext";
+import { usePathname } from "next/navigation";
 
 const topics = [
   ["Growing Up", "Family", "Love Life"],
@@ -14,6 +16,13 @@ const topics = [
 
 export default function TopicsPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const { addToHistory } = useNavigation();
+
+  useEffect(() => {
+    // Add current path to navigation history
+    addToHistory(pathname);
+  }, [pathname, addToHistory]);
 
   return (
     <div className="min-h-screen bg-[#faf9f6]">

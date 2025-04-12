@@ -1,17 +1,25 @@
+'use client';
+
 import { RecordingInterface } from "@/components/RecordingInterface"
 import { SidebarProvider } from "@/contexts/SidebarContext"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
+import { useNavigation } from "@/contexts/NavigationContext"
+import { usePathname } from "next/navigation"
+import { useEffect } from "react"
 
-interface PageProps {
-  params: Promise<{
-    category: string;
-  }>;
-}
+export default function Page({ params }: { params: { category: string } }) {
+  const pathname = usePathname();
+  const { addToHistory } = useNavigation();
 
-export default async function Page({ params }: PageProps) {
-  const resolvedParams = await params;
-  const category = resolvedParams.category;
+  // Extract category from pathname instead of params
+  const category = pathname.split('/').pop() || '';
+
+  useEffect(() => {
+    // Add current path to navigation history
+    addToHistory(pathname);
+  }, [pathname, addToHistory]);
+
   const formattedCategory = category.split('-').map((word: string) =>
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
@@ -23,24 +31,13 @@ export default async function Page({ params }: PageProps) {
         <div className="fixed top-0 left-0 right-0 bg-white border-b z-50">
           <div className="container mx-auto px-8 py-6">
             <div className="flex items-center justify-between">
-              <Link
-                href="/dashboard"
-                className="text-2xl font-bold text-[#3c4f76] hover:text-[#2a3b5a] transition-colors"
-              >
-                Eterna
-              </Link>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center">
+                <BackButton />
                 <Link
-                  href="/call"
-                  className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+                  href="/dashboard"
+                  className="text-2xl font-bold text-[#3c4f76] hover:text-[#2a3b5a] transition-colors ml-4"
                 >
-                  Topics
-                </Link>
-                <Link
-                  href="/dashboard/stories"
-                  className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
-                >
-                  Stories
+                  Eterna
                 </Link>
               </div>
             </div>

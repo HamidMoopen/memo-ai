@@ -1,53 +1,75 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { createContext, useContext, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 type NavigationContextType = {
-    navigateBack: () => void;
+    history: string[];
     addToHistory: (path: string) => void;
+    navigateBack: () => void;
 };
 
-const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+const NavigationContext = createContext<NavigationContextType>({
+    history: [],
+    addToHistory: () => { },
+    navigateBack: () => { },
+});
 
 export function NavigationProvider({ children }: { children: React.ReactNode }) {
+    const [history, setHistory] = useState<string[]>(['/dashboard']);
     const router = useRouter();
-    const pathname = usePathname();
-    const [history, setHistory] = useState<string[]>(['/']);
+    const isNavigatingRef = useRef(false);
 
-    const addToHistory = useCallback((path: string) => {
-        setHistory(prev => [...prev, path]);
-    }, []);
+    const addToHistory = (path: string) => {
+        // Don't add to history if we're in the middle of navigating back
+        if (isNavigatingRef.current) return;
 
-    const navigateBack = useCallback(() => {
-        // Special case for topics page - always go to dashboard
-        if (pathname === '/call') {
-            router.push('/dashboard');
-            return;
-        }
+        setHistory((prev) => {
+            // Don't add duplicate consecutive entries
+            if (prev.length > 0 && prev[prev.length - 1] === path) {
+                return prev;
+            }
 
-        setHistory(prev => {
-            const newHistory = [...prev];
-            // Remove current page
-            newHistory.pop();
-            // Get previous page
-            const previousPage = newHistory[newHistory.length - 1] || '/';
-            router.push(previousPage);
-            return newHistory;
+            // Create a new history array with the new path
+            return [...prev, path];
         });
-    }, [router, pathname]);
+    };
+
+    const navigateBack = () => {
+        if (history.length > 1) {
+            // Set flag to prevent adding current page to history during navigation
+            isNavigatingRef.current = true;
+
+            // Create a copy of the history
+            const newHistory = [...history];
+
+            // Remove the current page from history
+            newHistory.pop();
+
+            // Get the previous page
+            const previousPage = newHistory[newHistory.length - 1];
+
+            // Update the history state first (before navigation)
+            setHistory(newHistory);
+
+            // Navigate to the previous page
+            router.push(previousPage);
+
+            // Reset the flag after navigation
+            setTimeout(() => {
+                isNavigatingRef.current = false;
+            }, 500);
+        } else {
+            // Default fallback if no history
+            router.push('/dashboard');
+        }
+    };
 
     return (
-        <NavigationContext.Provider value={{ navigateBack, addToHistory }}>
+        <NavigationContext.Provider value={{ history, addToHistory, navigateBack }}>
             {children}
         </NavigationContext.Provider>
     );
 }
 
-export function useNavigation() {
-    const context = useContext(NavigationContext);
-    if (context === undefined) {
-        throw new Error('useNavigation must be used within a NavigationProvider');
-    }
-    return context;
-} 
+export const useNavigation = () => useContext(NavigationContext); 
