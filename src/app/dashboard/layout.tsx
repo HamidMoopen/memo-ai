@@ -11,6 +11,7 @@ import {
   X,
   BookMarked,
   FolderInputIcon,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -19,7 +20,7 @@ const sidebarItems = [
   { icon: Home, label: "Overview", href: "/dashboard" },
   { icon: Mic, label: "Record", href: "/call" },
   { icon: BookMarked, label: "Stories", href: "/dashboard/stories" },
-  { icon: ChartBarBig, label: "Insights", href: "/dashboard/insights" },
+  { icon: CalendarDays, label: "Schedule", href: "/scheduled-calls" },
   { icon: FolderInputIcon, label: "Publish", href: "/dashboard/publish" },
 ];
 

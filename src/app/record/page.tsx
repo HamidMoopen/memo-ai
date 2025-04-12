@@ -1,8 +1,10 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Mic, Square, Download } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
+import { useNavigation } from "@/contexts/NavigationContext"
+import { usePathname } from "next/navigation"
 
 const questions = [
   "What was the best date you've ever been on?",
@@ -23,6 +25,13 @@ export default function RecordPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [hasRecording, setHasRecording] = useState(false)
+  const pathname = usePathname();
+  const { addToHistory } = useNavigation();
+
+  useEffect(() => {
+    // Add current path to navigation history
+    addToHistory(pathname);
+  }, [pathname, addToHistory]);
 
   const nextQuestion = () => {
     setCurrentQuestion((prev) => (prev + 1) % questions.length)
@@ -52,9 +61,7 @@ export default function RecordPage() {
     <div className="min-h-screen bg-[#faf9f6]">
       <div className="container mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-12">
-          <Link href="/call" className="text-[#3c4f76] hover:text-[#2a3b5a] transition-colors">
-            <ChevronLeft className="w-8 h-8" />
-          </Link>
+          <BackButton />
           <h1 className="text-2xl font-bold text-[#3c4f76]">Eterna</h1>
           <div className="w-8" />
         </div>

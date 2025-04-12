@@ -84,10 +84,10 @@ export default function DashboardPage() {
                             href: "/call"
                         },
                         {
-                            icon: ChartBarBig,
-                            title: "Insights",
-                            description: "See your story insights",
-                            href: "/dashboard/insights"
+                            icon: CalendarDays,
+                            title: "Schedule Call",
+                            description: "Set up your next story session",
+                            href: "/schedule"
                         }
                     ].map((action) => (
                         <Link
@@ -174,9 +174,9 @@ export default function DashboardPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button className="text-sm text-red-500 hover:text-red-700">
-                                                Cancel
-                                            </button>
+                                            <Link href="/scheduled-calls" className="text-sm text-[#3c4f76] hover:text-[#2a3b5a]">
+                                                View All
+                                            </Link>
                                         </div>
                                     </div>
                                 ))
