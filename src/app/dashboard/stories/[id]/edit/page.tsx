@@ -12,8 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 type tParams = Promise<{ id: string }>
 
-export default async function EditStoryPage(props: { params: tParams }) {
-    const { id } = await props.params;
+export default function EditStoryPage(props: { params: tParams }) {
     const router = useRouter()
     const [story, setStory] = useState<any>(null)
     const [title, setTitle] = useState('')
@@ -21,16 +20,30 @@ export default async function EditStoryPage(props: { params: tParams }) {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const supabase = createClient()
+    const [id, setId] = useState<string | null>(null)
 
     useEffect(() => {
-        async function fetchStory() {
-            // Extract the ID from params
-            const storyId = id
+        async function resolveParams() {
+            try {
+                const resolvedParams = await props.params
+                setId(resolvedParams.id)
+            } catch (error) {
+                console.error('Error resolving params:', error)
+                router.push('/dashboard/stories')
+            }
+        }
 
+        resolveParams()
+    }, [props.params, router])
+
+    useEffect(() => {
+        if (!id) return
+
+        async function fetchStory() {
             const { data, error } = await supabase
                 .from('stories')
                 .select('*')
-                .eq('id', storyId)
+                .eq('id', id as string)
                 .single()
 
             if (error) {
@@ -64,7 +77,7 @@ export default async function EditStoryPage(props: { params: tParams }) {
                     content,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', id)
+                .eq('id', id as string)
 
             if (error) {
                 throw new Error(error.message)
