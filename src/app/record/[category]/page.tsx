@@ -8,11 +8,11 @@ import { useNavigation } from "@/contexts/NavigationContext"
 import { usePathname } from "next/navigation"
 import { useEffect } from "react"
 
-export default function Page({ params }: { params: { category: string } }) {
+export default function Page() {
   const pathname = usePathname();
   const { addToHistory } = useNavigation();
 
-  // Extract category from pathname instead of params
+  // Extract category from pathname
   const category = pathname.split('/').pop() || '';
 
   useEffect(() => {
