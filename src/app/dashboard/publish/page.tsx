@@ -27,7 +27,7 @@ export default function PublishPage() {
         {
             id: "podcast",
             title: "Podcast Series",
-            description: "Share your stories as audio episodes",
+            description: "Share your stories as audio episodes with your own voice",
             icon: Mic,
             image: "/images/podcast-sample.jpg",
             details: [
@@ -73,20 +73,17 @@ export default function PublishPage() {
                         {publishOptions.map((option) => (
                             <Card
                                 key={option.id}
-                                className="rounded-3xl border-2 border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                                className="rounded-3xl border-2 border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col"
                                 onClick={() => setSelectedOption(option.id)}
                             >
                                 <CardHeader className="pb-4">
-                                    {/* <div className="w-16 h-16 bg-[#3c4f76]/10 rounded-2xl flex items-center justify-center mb-4">
-                                        <option.icon className="w-8 h-8 text-[#3c4f76]" />
-                                    </div> */}
                                     <CardTitle className="text-2xl text-[#3c4f76]">{option.title}</CardTitle>
                                     <CardDescription className="text-[#383f51] text-lg">
                                         {option.description}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="h-48 w-full rounded-xl overflow-hidden mb-4 bg-[#f5f5f5] flex items-center justify-center">
+                                <CardContent className="flex-1 flex flex-col justify-between">
+                                    <div className="aspect-[16/9] w-full rounded-xl overflow-hidden bg-[#f5f5f5] flex items-center justify-center mb-4">
                                         {option.id === "printed" && (
                                             <BookText className="w-24 h-24 text-[#3c4f76]/40" />
                                         )}
@@ -97,7 +94,7 @@ export default function PublishPage() {
                                             <Mail className="w-24 h-24 text-[#3c4f76]/40" />
                                         )}
                                     </div>
-                                    <Button className="w-full bg-[#3c4f76] hover:bg-[#2a3b5a] text-white rounded-xl py-6 text-lg">
+                                    <Button className="w-full bg-[#3c4f76] hover:bg-[#2a3b5a] text-white rounded-xl py-6 text-lg mt-auto">
                                         Learn More <ArrowRight className="ml-2 h-5 w-5" />
                                     </Button>
                                 </CardContent>
