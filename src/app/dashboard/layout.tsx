@@ -12,9 +12,12 @@ import {
   BookMarked,
   FolderInputIcon,
   CalendarDays,
+  User,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createClient } from '@/lib/supabase/client';
 
 const sidebarItems = [
   { icon: Home, label: "Overview", href: "/dashboard" },
@@ -30,6 +33,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#faf9f6]">
@@ -44,27 +73,61 @@ export default function DashboardLayout({
               Eterna
             </Link>
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6 text-[#3c4f76]" />
-              ) : (
-                <Menu className="h-6 w-6 text-[#3c4f76]" />
-              )}
-            </Button>
+            <div className="flex items-center space-x-4">
+              {/* Account Button - Desktop */}
+              <div className="hidden lg:block relative" ref={accountDropdownRef}>
+                <Button
+                  variant="ghost"
+                  className="flex items-center space-x-2 text-[#3c4f76] hover:text-[#2a3b5a]"
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                >
+                  <div className="w-8 h-8 bg-[#3c4f76]/10 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <span>{user?.user_metadata?.full_name || 'Account'}</span>
+                </Button>
 
-            {/* Desktop Sign Out */}
-            <Link
-              href="/"
-              className="hidden lg:block text-[#3c4f76] hover:text-[#2a3b5a] transition-colors"
-            >
-              Sign Out
-            </Link>
+                {/* Account Dropdown Menu */}
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2">
+                    <Link href="/dashboard/account">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-[#383f51] hover:text-[#3c4f76] hover:bg-[#faf9f6] px-4"
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Account Settings
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 px-4"
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = '/';
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6 text-[#3c4f76]" />
+                ) : (
+                  <Menu className="h-6 w-6 text-[#3c4f76]" />
+                )}
+              </Button>
+            </div>
           </nav>
         </div>
       </header>
@@ -107,15 +170,29 @@ export default function DashboardLayout({
                     </Link>
                   </li>
                 ))}
-                <li className="mt-4 pt-4 border-t">
+                {/* Add Account Settings to mobile menu */}
+                <li>
                   <Link
-                    href="/"
+                    href="/dashboard/account"
                     className="flex items-center gap-3 px-4 py-3 text-[#383f51] rounded-2xl hover:bg-[#faf9f6] hover:text-[#3c4f76] transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
+                    <Settings className="w-5 h-5" />
+                    Account Settings
+                  </Link>
+                </li>
+                <li className="mt-4 pt-4 border-t">
+                  <Button
+                    className="flex items-center gap-3 px-4 py-3 text-red-600 hover:text-red-700 w-full justify-start"
+                    variant="ghost"
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      window.location.href = '/';
+                    }}
+                  >
                     <LogOut className="w-5 h-5" />
                     Sign Out
-                  </Link>
+                  </Button>
                 </li>
               </ul>
             </div>
