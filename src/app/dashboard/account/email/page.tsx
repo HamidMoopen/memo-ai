@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { DashboardHeader } from "../../components/DashboardHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { Button } from "../../../../components/ui/button";
-import { Input } from "../../../../components/ui/input";
-import { Switch } from "../../../../components/ui/switch";
-import { createClient } from '../../../../lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export default function EmailSettingsPage() {
