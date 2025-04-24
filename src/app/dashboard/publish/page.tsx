@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { BookText, Mic, Mail, ArrowRight, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BookPublishing } from "./components/BookPublishing";
 
 export default function PublishPage() {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -111,53 +112,19 @@ export default function PublishPage() {
                             ← Back to options
                         </Button>
 
-                        {publishOptions.map(option => option.id === selectedOption && (
-                            <div key={option.id} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                                <div>
-                                    <div className="flex items-center mb-6">
-                                        <option.icon className="w-8 h-8 text-[#3c4f76] mr-3" />
-                                        <h2 className="text-3xl font-bold text-[#3c4f76]">{option.title}</h2>
-                                    </div>
-
-                                    <p className="text-xl text-[#383f51] mb-8">{option.description}</p>
-
-                                    <div className="mb-8">
-                                        <h3 className="text-xl font-medium text-[#3c4f76] mb-4">Features</h3>
-                                        <ul className="space-y-3">
-                                            {option.details.map((detail, index) => (
-                                                <li key={index} className="flex items-start">
-                                                    <div className="w-2 h-2 rounded-full bg-[#3c4f76] mt-2 mr-3"></div>
-                                                    <span className="text-lg text-[#383f51]">{detail}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    <div className="bg-[#3c4f76]/5 rounded-2xl p-6 mb-8">
-                                        <h3 className="text-xl font-medium text-[#3c4f76] mb-3">Coming Soon</h3>
-                                        <p className="text-[#383f51]">
-                                            We're currently developing this feature. Join our waitlist to be notified when it's available and receive early access.
-                                        </p>
-                                    </div>
-
-                                    <Button className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white rounded-xl py-6 px-8 text-lg">
-                                        Join Waitlist
-                                    </Button>
-                                </div>
-
-                                <div className="flex items-center justify-center h-[500px] rounded-2xl overflow-hidden bg-[#f5f5f5]">
-                                    {option.id === "printed" && (
-                                        <BookText className="w-48 h-48 text-[#3c4f76]/30" />
-                                    )}
-                                    {option.id === "podcast" && (
-                                        <Mic className="w-48 h-48 text-[#3c4f76]/30" />
-                                    )}
-                                    {option.id === "newsletter" && (
-                                        <Mail className="w-48 h-48 text-[#3c4f76]/30" />
-                                    )}
-                                </div>
+                        {selectedOption === "printed" ? (
+                            <BookPublishing />
+                        ) : (
+                            <div className="bg-[#3c4f76]/5 rounded-2xl p-6">
+                                <h3 className="text-xl font-medium text-[#3c4f76] mb-3">Coming Soon</h3>
+                                <p className="text-[#383f51]">
+                                    We're currently developing this feature. Join our waitlist to be notified when it's available and receive early access.
+                                </p>
+                                <Button className="mt-4 bg-[#3c4f76] hover:bg-[#2a3b5a] text-white rounded-xl py-6 px-8 text-lg">
+                                    Join Waitlist
+                                </Button>
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </div>

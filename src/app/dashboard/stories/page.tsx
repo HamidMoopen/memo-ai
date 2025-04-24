@@ -1,18 +1,45 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, ChevronRight, CalendarDays, BookMarked, Award } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card";
+import { Plus, ChevronRight, CalendarDays, BookMarked, Award, LayoutList, LayoutGrid } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { useRouter } from "next/navigation";
 import { createClient } from '@/lib/supabase/client';
 import { Progress } from "@/components/ui/progress";
+import { ChapterView } from './components/ChapterView';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { LifeChapter } from '@/types/story';
+import { ChaptersPage } from './components/ChaptersPage';
+import { Json } from '@/types/supabase';
+
+const CHAPTER_LABELS: Record<LifeChapter, string> = {
+    childhood: 'Childhood',
+    teenage_years: 'Teenage Years',
+    young_adult: 'Young Adult',
+    adulthood: 'Adulthood',
+    middle_age: 'Middle Age',
+    senior_years: 'Senior Years'
+};
+
+interface Story {
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    category: string;
+    life_chapter: LifeChapter | null;
+    chapter_metadata: Json;
+}
+
+type ViewMode = 'list' | 'chapters';
 
 export default function StoriesPage() {
     const router = useRouter();
-    const [stories, setStories] = useState<any[]>([]);
+    const [stories, setStories] = useState<Story[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
     const supabase = createClient();
 
     // Define milestones for story progress
@@ -55,7 +82,18 @@ export default function StoriesPage() {
                 return;
             }
 
-            setStories(data || []);
+            // Transform the data to ensure it matches the Story interface
+            const transformedStories: Story[] = (data || []).map(story => ({
+                id: story.id,
+                title: story.title,
+                content: story.content,
+                created_at: story.created_at,
+                category: story.category || 'Uncategorized',
+                life_chapter: story.life_chapter,
+                chapter_metadata: story.chapter_metadata
+            }));
+
+            setStories(transformedStories);
             setIsLoading(false);
         }
 
@@ -89,52 +127,56 @@ export default function StoriesPage() {
     }
 
     return (
-        <div>
-            <div className="flex items-center justify-between">
-                <DashboardHeader
-                    title="Your Stories"
-                    description="Browse and manage your recorded stories"
-                />
-                <div className="px-8">
+        <div className="container mx-auto py-8 px-4 md:px-8">
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                    <DashboardHeader
+                        title="Your Stories"
+                        description="View and manage your life stories"
+                    />
                     <Button
                         onClick={() => router.push('/call')}
-                        className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white text-lg px-8 py-6 rounded-2xl"
+                        className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white px-6 py-3 rounded-xl"
                     >
-                        <Plus className="mr-3 h-6 w-6" /> Record New Story
+                        <Plus className="mr-2 h-5 w-5" />
+                        New Story
                     </Button>
                 </div>
-            </div>
 
-            <div className="container mx-auto px-8 py-8">
-                {/* Progress Tracker Card */}
-                <Card className="mb-8 p-6 rounded-3xl border-2 border-gray-100">
-                    <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-2xl text-[#3c4f76]">Your Story Journey</CardTitle>
-                            {currentMilestone && (
-                                <div className="flex items-center bg-[#3c4f76]/10 text-[#3c4f76] px-4 py-2 rounded-full">
-                                    <Award className="mr-2 h-5 w-5" />
-                                    <span className="font-medium">{currentMilestone.label}</span>
+                {stories.length > 0 && (
+                    <Card className="rounded-3xl border-2 border-gray-100">
+                        <CardHeader>
+                            <CardTitle className="text-2xl text-[#3c4f76]">Story Progress</CardTitle>
+                            <CardDescription>Track your storytelling journey</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between text-sm text-[#383f51]">
+                                    <span>{currentMilestone?.label || 'Getting Started'}</span>
+                                    <span>{nextMilestone?.label}</span>
                                 </div>
-                            )}
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-[#383f51] font-medium">
-                                    {storyCount} {storyCount === 1 ? 'story' : 'stories'} shared
-                                </span>
-                                {nextMilestone && nextMilestone.count !== currentMilestone?.count && (
-                                    <span className="text-[#383f51]">
-                                        Next milestone: {nextMilestone.label} ({nextMilestone.count} stories)
-                                    </span>
-                                )}
+                                <Progress value={progressPercentage} className="h-2" />
+                                <div className="flex items-center gap-2 text-sm text-[#383f51]">
+                                    <Award className="h-4 w-4" />
+                                    <span>{storyCount} {storyCount === 1 ? 'story' : 'stories'} written</span>
+                                </div>
                             </div>
-                            <Progress value={progressPercentage} className="h-3 bg-gray-100" indicatorClassName="bg-[#3c4f76]" />
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {stories.length > 0 && (
+                    <div className="flex justify-end">
+                        <ToggleGroup type="single" value={viewMode} onValueChange={(value: string) => setViewMode(value as 'list' | 'chapters')}>
+                            <ToggleGroupItem value="list" aria-label="List View">
+                                <LayoutList className="h-5 w-5" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="chapters" aria-label="Chapter View">
+                                <LayoutGrid className="h-5 w-5" />
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
+                )}
 
                 {stories.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-3xl shadow p-8">
@@ -147,6 +189,8 @@ export default function StoriesPage() {
                             Start Recording
                         </Button>
                     </div>
+                ) : viewMode === 'chapters' ? (
+                    <ChaptersPage stories={stories} />
                 ) : (
                     <div className="grid gap-8">
                         {stories.map((story) => (
@@ -180,9 +224,12 @@ export default function StoriesPage() {
                                         </p>
                                     </div>
                                     <div className="flex flex-wrap gap-3">
-                                        <span
-                                            className="px-6 py-2 rounded-full bg-[#3c4f76]/10 text-[#3c4f76] text-lg font-medium"
-                                        >
+                                        {story.life_chapter && (
+                                            <span className="px-6 py-2 rounded-full bg-[#3c4f76]/10 text-[#3c4f76] text-lg font-medium">
+                                                {CHAPTER_LABELS[story.life_chapter]}
+                                            </span>
+                                        )}
+                                        <span className="px-6 py-2 rounded-full bg-[#3c4f76]/10 text-[#3c4f76] text-lg font-medium">
                                             {story.category}
                                         </span>
                                     </div>
