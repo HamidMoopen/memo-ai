@@ -30,6 +30,9 @@ export default function StoryJournalPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState("")
     const [callSuccess, setCallSuccess] = useState(false)
+    const [streak, setStreak] = useState(2) // Example value
+    const [storiesThisWeek, setStoriesThisWeek] = useState(3) // Example value
+    const [weeklyGoal, setWeeklyGoal] = useState(5) // Example value
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         // Only allow digits
@@ -181,75 +184,72 @@ export default function StoryJournalPage() {
                                 <p className="text-[#383f51]/70">Schedule regular times to capture your stories</p>
                             </div>
                         </div>
-                        ))}
+                    </Link>
                 </div>
+            </main>
+
+            {/* Call Modal with Phone Number Input */}
+            {isCallModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-3xl p-8 max-w-md w-full">
+                        <h3 className="text-2xl font-bold text-[#3c4f76] mb-4">Start Your Story Call</h3>
+
+                        {callSuccess ? (
+                            <div className="text-center py-6">
+                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <p className="text-lg font-medium text-[#3c4f76]">Call initiated!</p>
+                                <p className="text-[#383f51]/70">You'll receive a call shortly.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-[#383f51] mb-6">
+                                    Enter your phone number below and we'll call you right away. Our voice assistant will guide you through sharing your story.
+                                </p>
+
+                                <div className="mb-6">
+                                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-[#383f51] mb-2">
+                                        Your Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        id="phoneNumber"
+                                        value={formatPhoneNumber(phoneNumber)}
+                                        onChange={handlePhoneNumberChange}
+                                        placeholder="(123) 456-7890"
+                                        className={`w-full px-4 py-3 rounded-xl border ${error ? 'border-red-500' : 'border-[#3c4f76]/30'} focus:outline-none focus:ring-2 focus:ring-[#3c4f76]/50`}
+                                    />
+                                    {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                                </div>
+
+                                <div className="flex justify-end gap-4">
+                                    <button
+                                        onClick={() => {
+                                            setIsCallModalOpen(false)
+                                            setPhoneNumber("")
+                                            setError("")
+                                        }}
+                                        className="px-6 py-2 rounded-xl border border-[#3c4f76] text-[#3c4f76]"
+                                        disabled={isSubmitting}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={isSubmitting || !phoneNumber}
+                                        className={`px-6 py-2 rounded-xl ${isSubmitting || !phoneNumber ? 'bg-[#3c4f76]/50' : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'} text-white transition-colors`}
+                                    >
+                                        {isSubmitting ? 'Initiating Call...' : 'Call Me Now'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
-            </main >
-
-        {/* Call Modal with Phone Number Input */ }
-    {
-        isCallModalOpen && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-3xl p-8 max-w-md w-full">
-                    <h3 className="text-2xl font-bold text-[#3c4f76] mb-4">Start Your Story Call</h3>
-
-                    {callSuccess ? (
-                        <div className="text-center py-6">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <p className="text-lg font-medium text-[#3c4f76]">Call initiated!</p>
-                            <p className="text-[#383f51]/70">You'll receive a call shortly.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <p className="text-[#383f51] mb-6">
-                                Enter your phone number below and we'll call you right away. Our voice assistant will guide you through sharing your story.
-                            </p>
-
-                            <div className="mb-6">
-                                <label htmlFor="phoneNumber" className="block text-sm font-medium text-[#383f51] mb-2">
-                                    Your Phone Number
-                                </label>
-                                <input
-                                    type="tel"
-                                    id="phoneNumber"
-                                    value={formatPhoneNumber(phoneNumber)}
-                                    onChange={handlePhoneNumberChange}
-                                    placeholder="(123) 456-7890"
-                                    className={`w-full px-4 py-3 rounded-xl border ${error ? 'border-red-500' : 'border-[#3c4f76]/30'} focus:outline-none focus:ring-2 focus:ring-[#3c4f76]/50`}
-                                />
-                                {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-                            </div>
-
-                            <div className="flex justify-end gap-4">
-                                <button
-                                    onClick={() => {
-                                        setIsCallModalOpen(false)
-                                        setPhoneNumber("")
-                                        setError("")
-                                    }}
-                                    className="px-6 py-2 rounded-xl border border-[#3c4f76] text-[#3c4f76]"
-                                    disabled={isSubmitting}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={isSubmitting || !phoneNumber}
-                                    className={`px-6 py-2 rounded-xl ${isSubmitting || !phoneNumber ? 'bg-[#3c4f76]/50' : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'} text-white transition-colors`}
-                                >
-                                    {isSubmitting ? 'Initiating Call...' : 'Call Me Now'}
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </div>
-        )
-    }
-        </div >
     )
 }
