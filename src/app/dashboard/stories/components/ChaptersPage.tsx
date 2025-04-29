@@ -65,23 +65,23 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
     return (
         <div className="space-y-8">
             {/* Legacy Timeline Visualization */}
-            <Card className="p-6 rounded-3xl border-2 border-gray-100">
+            <Card className="p-6 rounded-2xl border border-border bg-accent shadow-soft">
                 <CardHeader>
-                    <CardTitle className="text-2xl text-[#3c4f76]">Legacy Timeline</CardTitle>
-                    <p className="text-[#383f51]">Visualizing your life chapters</p>
+                    <CardTitle className="text-2xl text-foreground">Legacy Timeline</CardTitle>
+                    <p className="text-muted-foreground">Visualizing your life chapters</p>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         {chapterStats.map(({ chapter, label, count, description }) => (
                             <div key={chapter} className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="font-medium text-[#3c4f76]">{label}</span>
-                                    <span className="text-[#383f51]">{count} stories</span>
+                                    <span className="font-medium text-primary">{label}</span>
+                                    <span className="text-muted-foreground">{count} stories</span>
                                 </div>
                                 <div className="relative h-8">
-                                    <div className="absolute inset-0 bg-gray-100 rounded-full" />
+                                    <div className="absolute inset-0 bg-muted rounded-full" />
                                     <div 
-                                        className="absolute inset-y-0 left-0 bg-[#3c4f76] rounded-full transition-all"
+                                        className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all"
                                         style={{ 
                                             width: `${count ? Math.max(5, (count / Math.max(...Object.values(storiesByChapter).map(s => s.length))) * 100) : 0}%`,
                                             opacity: count ? 1 : 0.3
@@ -101,9 +101,9 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
                     if (chapterStories.length === 0) return null;
 
                     return (
-                        <Card key={chapter} className="rounded-3xl border-2 border-gray-100">
+                        <Card key={chapter} className="rounded-2xl border border-border bg-accent shadow-soft">
                             <CardHeader 
-                                className="cursor-pointer hover:bg-gray-50 rounded-t-3xl"
+                                className="cursor-pointer hover:bg-primary/5 rounded-t-2xl"
                                 onClick={() => {
                                     const newExpanded = new Set(expandedChapters);
                                     if (newExpanded.has(chapter)) {
@@ -116,14 +116,14 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="space-y-1">
-                                        <CardTitle className="text-2xl text-[#3c4f76]">
+                                        <CardTitle className="text-2xl text-foreground">
                                             {label}
                                         </CardTitle>
-                                        <p className="text-[#383f51]">
+                                        <p className="text-muted-foreground">
                                             {CHAPTER_DESCRIPTIONS[chapter]}
                                         </p>
                                     </div>
-                                    <Button variant="ghost" size="icon" className="text-[#3c4f76]">
+                                    <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
                                         {expandedChapters.has(chapter) ? (
                                             <ChevronDown className="h-6 w-6" />
                                         ) : (
@@ -138,15 +138,15 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
                                         {chapterStories.map((story) => (
                                             <Card
                                                 key={story.id}
-                                                className="hover:shadow-md transition-shadow p-6 rounded-2xl border"
+                                                className="hover:shadow-md transition-shadow p-6 rounded-xl border border-border bg-background"
                                             >
                                                 <div className="flex items-start justify-between">
                                                     <div className="space-y-2">
-                                                        <h3 className="text-xl font-semibold text-[#3c4f76]">
+                                                        <h3 className="text-xl font-semibold text-foreground">
                                                             {story.title}
                                                         </h3>
-                                                        <div className="flex items-center text-[#383f51] text-sm">
-                                                            <CalendarDays className="mr-2 h-4 w-4" />
+                                                        <div className="flex items-center text-muted-foreground text-sm">
+                                                            <CalendarDays className="mr-2 h-4 w-4 text-primary" />
                                                             {new Date(story.created_at).toLocaleDateString()}
                                                         </div>
                                                     </div>
@@ -172,7 +172,7 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="text-[#3c4f76]"
+                                                                    className="text-primary hover:bg-primary/10"
                                                                     onClick={() => setEditingStory(story.id)}
                                                                 >
                                                                     <Edit className="h-5 w-5" />
@@ -180,7 +180,7 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="text-[#3c4f76]"
+                                                                    className="text-primary hover:bg-primary/10"
                                                                     onClick={() => router.push(`/dashboard/stories/${story.id}`)}
                                                                 >
                                                                     <BookOpen className="h-5 w-5" />
@@ -190,12 +190,12 @@ export function ChaptersPage({ stories }: ChaptersPageProps) {
                                                     </div>
                                                 </div>
                                                 {story.chapter_metadata && (
-                                                    <div className="mt-4 pt-4 border-t">
+                                                    <div className="mt-4 pt-4 border-t border-border">
                                                         <div className="flex flex-wrap gap-2">
                                                             {story.chapter_metadata.key_events.map((event, index) => (
                                                                 <span
                                                                     key={index}
-                                                                    className="px-3 py-1 rounded-full bg-[#3c4f76]/10 text-[#3c4f76] text-sm"
+                                                                    className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm"
                                                                 >
                                                                     {event}
                                                                 </span>
