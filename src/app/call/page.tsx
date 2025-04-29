@@ -26,10 +26,77 @@ const recentStories = [
 
 export default function StoryJournalPage() {
     const [isCallModalOpen, setIsCallModalOpen] = useState(false)
-    const [hoveredStory, setHoveredStory] = useState<number | null>(null)
-    const storiesThisWeek = 2
-    const weeklyGoal = 3
-    const streak = 4
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState("")
+    const [callSuccess, setCallSuccess] = useState(false)
+    const [streak, setStreak] = useState(2) // Example value
+    const [storiesThisWeek, setStoriesThisWeek] = useState(3) // Example value
+    const [weeklyGoal, setWeeklyGoal] = useState(5) // Example value
+
+    const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Only allow digits
+        const value = e.target.value.replace(/\D/g, '')
+        setPhoneNumber(value)
+        setError("")
+    }
+
+    const formatPhoneNumber = (value: string) => {
+        if (!value) return value
+
+        // Format as (XXX) XXX-XXXX
+        const phoneNumberLength = value.length
+        if (phoneNumberLength < 4) return value
+        if (phoneNumberLength < 7) {
+            return `(${value.slice(0, 3)}) ${value.slice(3)}`
+        }
+        return `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`
+    }
+
+    const handleSubmit = async () => {
+        // Validate US phone number (10 digits)
+        if (phoneNumber.replace(/\D/g, '').length !== 10) {
+            setError("Please enter a valid 10-digit US phone number")
+            return
+        }
+
+        setIsSubmitting(true)
+
+        try {
+            // Format phone number for API call (E.164 format)
+            const formattedNumber = `+1${phoneNumber.replace(/\D/g, '')}`
+
+            // Call the server-side API route that will use the Vapi SDK
+            const response = await fetch('/api/initiate-call', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    phoneNumber: formattedNumber,
+                    // You can add additional metadata here if needed
+                }),
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || 'Failed to initiate call')
+            }
+
+            // Call initiated successfully
+            setCallSuccess(true)
+            setTimeout(() => {
+                setIsCallModalOpen(false)
+                setPhoneNumber("")
+                setCallSuccess(false)
+            }, 3000) // Close modal after showing success message
+
+        } catch (err) {
+            setIsSubmitting(false)
+            setError(err instanceof Error ? err.message : "Failed to initiate call. Please try again.")
+            console.error("Call initiation error:", err)
+        }
+    }
 
     return (
         <div className="relative min-h-screen overflow-x-hidden">
@@ -66,122 +133,120 @@ export default function StoryJournalPage() {
                     </div>
                 </div>
 
-                {/* Interactive Recording Choices */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
-                    {/* Phone Call Option */}
+                {/* Journal-like interface */}
+                <div className="bg-white rounded-3xl shadow-lg p-8 border-2 border-[#3c4f76]/10">
+                    {/* Add a Story by Phone Call */}
                     <button
                         onClick={() => setIsCallModalOpen(true)}
-                        className="relative group focus:outline-none"
+                        className="w-full mb-8 p-6 flex items-center justify-between bg-[#faf9f6] rounded-2xl border-2 border-[#3c4f76]/20 hover:border-[#3c4f76] transition-all duration-300 group"
                     >
-                        <div className="w-40 h-40 md:w-48 md:h-48 rounded-full bg-card/90 backdrop-blur-md shadow-xl border-2 border-primary/20 flex flex-col items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl group-hover:-rotate-2 group-active:scale-95 group-hover:border-primary/60">
-                            <PhoneCall className="w-14 h-14 text-primary mb-2 drop-shadow-lg" />
-                            <span className="text-xl font-bold text-foreground">Phone Call</span>
-                            <span className="text-sm text-muted-foreground mt-1">Guided conversation</span>
-                            <span className="absolute -top-3 -right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold shadow-md animate-bounce">New</span>
+                        <div className="flex items-center">
+                            <div className="w-14 h-14 rounded-full bg-[#3c4f76] flex items-center justify-center mr-4 group-hover:bg-[#2a3b5a] transition-colors">
+                                <PhoneCall className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-xl font-bold text-[#3c4f76]">Add a Story by Phone Call</h3>
+                                <p className="text-[#383f51]/70">Share your memories through a guided conversation</p>
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-[#3c4f76]/10 flex items-center justify-center group-hover:bg-[#3c4f76]/20 transition-colors">
+                            <span className="text-[#3c4f76] font-bold">+</span>
                         </div>
                     </button>
-                    {/* Direct Recording Option */}
-                    <Link href="/topics" className="relative group focus:outline-none">
-                        <div className="w-40 h-40 md:w-48 md:h-48 rounded-full bg-card/90 backdrop-blur-md shadow-xl border-2 border-primary/20 flex flex-col items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl group-hover:rotate-2 group-active:scale-95 group-hover:border-primary/60">
-                            <Mic className="w-14 h-14 text-primary mb-2 drop-shadow-lg" />
-                            <span className="text-xl font-bold text-foreground">Direct Recording</span>
-                            <span className="text-sm text-muted-foreground mt-1">Record instantly</span>
-                            <span className="absolute -top-3 -right-3 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md animate-bounce">Popular</span>
+
+                    {/* Add a Story through our Agent */}
+                    <Link
+                        href="/topics"
+                        className="w-full mb-8 p-6 flex items-center justify-between bg-[#faf9f6] rounded-2xl border-2 border-[#3c4f76]/20 hover:border-[#3c4f76] transition-all duration-300 group"
+                    >
+                        <div className="flex items-center">
+                            <div className="w-14 h-14 rounded-full bg-[#3c4f76] flex items-center justify-center mr-4 group-hover:bg-[#2a3b5a] transition-colors">
+                                <Mic className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-xl font-bold text-[#3c4f76]">Add a Story through our site</h3>
+                                <p className="text-[#383f51]/70">Record your story directly on our platform</p>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Set Up Weekly Calls */}
+                    <Link
+                        href="/schedule"
+                        className="w-full p-6 flex items-center justify-between bg-[#faf9f6] rounded-2xl border-2 border-[#3c4f76]/20 hover:border-[#3c4f76] transition-all duration-300 group"
+                    >
+                        <div className="flex items-center">
+                            <div className="w-14 h-14 rounded-full bg-[#3c4f76] flex items-center justify-center mr-4 group-hover:bg-[#2a3b5a] transition-colors">
+                                <Calendar className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-xl font-bold text-[#3c4f76]">Set Up Weekly Calls</h3>
+                                <p className="text-[#383f51]/70">Schedule regular times to capture your stories</p>
+                            </div>
                         </div>
                     </Link>
                 </div>
-
-                {/* Recent Stories - Horizontal Scrollable Animated Stack */}
-                <div className="max-w-5xl mx-auto px-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-2xl font-bold text-foreground drop-shadow-md">Recent Stories</h3>
-                        <Button
-                            variant="ghost"
-                            className="text-primary hover:text-primary/90 text-lg"
-                            asChild
-                        >
-                            <Link href="/dashboard/stories">View All</Link>
-                        </Button>
-                    </div>
-                    <div className="flex gap-6 overflow-x-auto pb-2 hide-scrollbar">
-                        {recentStories.map((story, idx) => (
-                            <div
-                                key={story.title}
-                                className={cn(
-                                    "relative min-w-[320px] max-w-xs h-44 rounded-2xl bg-card/90 backdrop-blur-md border border-border shadow-lg flex flex-col justify-between p-6 transition-all duration-300 cursor-pointer group",
-                                    hoveredStory === idx && "scale-105 shadow-2xl border-primary/60"
-                                )}
-                                onMouseEnter={() => setHoveredStory(idx)}
-                                onMouseLeave={() => setHoveredStory(null)}
-                            >
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                        <Play className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-lg font-semibold text-foreground">{story.title}</h4>
-                                        <span className="text-xs text-muted-foreground">{story.date}</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 text-sm text-foreground mb-2">
-                                    {story.snippet}
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-primary hover:bg-primary/10 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200"
-                                    >
-                                        <Play className="w-4 h-4 mr-1" /> Play Snippet
-                                    </Button>
-                                    {hoveredStory === idx && (
-                                        <span className="text-xs text-emerald-600 font-semibold animate-fade-in">Keep going!</span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </main>
 
-            {/* Floating Record Now Button */}
-            <button
-                onClick={() => setIsCallModalOpen(true)}
-                className="fixed bottom-8 right-8 z-50 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-8 py-4 rounded-full shadow-2xl text-lg font-bold flex items-center gap-3 hover:scale-105 hover:shadow-3xl transition-all duration-300 border-4 border-white/60 backdrop-blur-md"
-            >
-                <Mic className="w-6 h-6" /> Record Now
-            </button>
-
-            {/* Call Modal */}
+            {/* Call Modal with Phone Number Input */}
             {isCallModalOpen && (
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center z-50">
-                    <div className="bg-background rounded-3xl p-8 max-w-md w-full shadow-soft border border-border animate-in">
-                        <div className="space-y-8">
-                            <div className="text-center">
-                                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-                                    <PhoneCall className="w-10 h-10 text-primary" />
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-3xl p-8 max-w-md w-full">
+                        <h3 className="text-2xl font-bold text-[#3c4f76] mb-4">Start Your Story Call</h3>
+
+                        {callSuccess ? (
+                            <div className="text-center py-6">
+                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
                                 </div>
-                                <h3 className="text-3xl font-bold text-foreground mb-4">Start Your Story Call</h3>
-                                <p className="text-muted-foreground text-lg">
-                                    We'll call you and guide you through sharing your story. Our voice assistant will ask you questions about topics you're interested in.
+                                <p className="text-lg font-medium text-[#3c4f76]">Call initiated!</p>
+                                <p className="text-[#383f51]/70">You'll receive a call shortly.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-[#383f51] mb-6">
+                                    Enter your phone number below and we'll call you right away. Our voice assistant will guide you through sharing your story.
                                 </p>
-                            </div>
-                            <div className="flex justify-end gap-4">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsCallModalOpen(false)}
-                                    className="border-border hover:border-primary px-6 py-3 text-lg"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={() => setIsCallModalOpen(false)}
-                                    className="bg-primary hover:bg-primary/90 px-6 py-3 text-lg"
-                                >
-                                    Call Me Now
-                                </Button>
-                            </div>
-                        </div>
+
+                                <div className="mb-6">
+                                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-[#383f51] mb-2">
+                                        Your Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        id="phoneNumber"
+                                        value={formatPhoneNumber(phoneNumber)}
+                                        onChange={handlePhoneNumberChange}
+                                        placeholder="(123) 456-7890"
+                                        className={`w-full px-4 py-3 rounded-xl border ${error ? 'border-red-500' : 'border-[#3c4f76]/30'} focus:outline-none focus:ring-2 focus:ring-[#3c4f76]/50`}
+                                    />
+                                    {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                                </div>
+
+                                <div className="flex justify-end gap-4">
+                                    <button
+                                        onClick={() => {
+                                            setIsCallModalOpen(false)
+                                            setPhoneNumber("")
+                                            setError("")
+                                        }}
+                                        className="px-6 py-2 rounded-xl border border-[#3c4f76] text-[#3c4f76]"
+                                        disabled={isSubmitting}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={isSubmitting || !phoneNumber}
+                                        className={`px-6 py-2 rounded-xl ${isSubmitting || !phoneNumber ? 'bg-[#3c4f76]/50' : 'bg-[#3c4f76] hover:bg-[#2a3b5a]'} text-white transition-colors`}
+                                    >
+                                        {isSubmitting ? 'Initiating Call...' : 'Call Me Now'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

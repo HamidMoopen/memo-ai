@@ -28,6 +28,7 @@
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.4",
+    "@vapi-ai/server-sdk": "^0.6.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "google-one-tap": "^1.0.6",
@@ -42,7 +43,6 @@
     "recharts": "^2.15.1",
     "sonner": "^2.0.3",
     "supabase": "^2.12.1",
-    "tailwind-merge": "^3.2.0",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7"
   },
