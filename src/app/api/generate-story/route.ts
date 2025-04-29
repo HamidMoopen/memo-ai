@@ -1,241 +1,226 @@
 import { NextResponse } from 'next/server';
-import type { StoryData } from '@/types/story';
+import { createClient } from '@/lib/supabase/server';
+import OpenAI from 'openai';
+import { LifeChapter } from '@/types/story';
 
-const SYSTEM_PROMPT = `You are a story analyzer that processes conversations and extracts meaningful narratives and insights. 
-Based on the user's messages ONLY (ignore any AI responses), provide a structured response with the following sections:
+// Check if OpenAI API key is configured
+if (!process.env.OPENAI_API_KEY) {
+    console.error('OpenAI API key is not configured');
+}
 
-1. Story Narrative:
-   - Write a complete narrative that maintains the person's voice and perspective
-   - Focus on their direct experiences and memories
-   - Keep the tone personal and authentic
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
-2. Key Themes (2-3):
-   - List the major recurring themes from their story
-   - Examples: Family, Loss, Resilience, Career, etc.
-
-3. Notable Quotes (1-2):
-   - Extract direct, meaningful quotes from their story
-   - Choose quotes that capture significant moments or emotions
-
-4. Historical Context:
-   Time Periods:
-   - List specific years or decades mentioned
-   - Include general time periods relevant to their story
-
-   Events:
-   - List major personal events from their story
-   - Include relevant historical events they mentioned
-
-   Cultural Context:
-   - Note cultural elements from their story
-   - Include societal context of their experiences
-
-5. Follow-up Topics (2-3):
-   - Suggest natural conversation topics based on their story
-   - Focus on areas they might want to elaborate on
-
-Format each section clearly and ensure all sections are filled out. If certain information isn't explicitly mentioned, make reasonable inferences based on the context provided, but stay true to their story.
-
-If a previous story is provided, incorporate its content and continue the narrative while maintaining consistency.`;
-
-// Helper function to convert OpenAI's text response to our story format
-function convertResponseToStoryJSON(text: string): StoryData {
-    // Split the text into sections based on numbered headers
-    const sections = text.split(/\d+\.\s+/);
-    
-    // Remove any empty sections
-    const nonEmptySections = sections.filter(s => s.trim());
-
-    // Extract narrative (first section)
-    const narrativeSection = nonEmptySections[0] || '';
-    const narrative = narrativeSection
-        .replace(/Story Narrative:?\s*/i, '')
-        .trim();
-
-    // Extract themes (second section)
-    const themesSection = nonEmptySections[1] || '';
-    const themes = themesSection
-        .replace(/Key Themes.*?:/i, '')
-        .split(/[,\n]/)
-        .map(t => t.trim())
-        .filter(t => t && !t.includes('-'));
-
-    // Extract quotes (third section)
-    const quotesSection = nonEmptySections[2] || '';
-    const quotes = quotesSection
-        .replace(/Notable Quotes.*?:/i, '')
-        .split(/["\n]/)
-        .map(q => q.trim())
-        .filter(q => q && !q.includes('-'));
-
-    // Extract historical context (fourth section)
-    const historicalSection = nonEmptySections[3] || '';
-    
-    // Parse time periods
-    const timePeriodMatch = historicalSection.match(/Time Periods:([\s\S]*?)(?=Events:|$)/);
-    const timePeriods = timePeriodMatch 
-        ? timePeriodMatch[1].split(/[,\n]/).map(t => t.trim()).filter(t => t && !t.includes('-'))
-        : ['Recent Times'];
-
-    // Parse events
-    const eventsMatch = historicalSection.match(/Events:([\s\S]*?)(?=Cultural Context:|$)/);
-    const events = eventsMatch
-        ? eventsMatch[1].split(/[,\n]/).map(e => e.trim()).filter(e => e && !e.includes('-'))
-        : ['Personal Events'];
-
-    // Parse cultural context
-    const culturalMatch = historicalSection.match(/Cultural Context:([\s\S]*?)(?=\d|$)/);
-    const culturalContext = culturalMatch
-        ? culturalMatch[1].split(/[,\n]/).map(c => c.trim()).filter(c => c && !c.includes('-'))
-        : ['Contemporary Culture'];
-
-    // Extract follow-up topics (fifth section)
-    const topicsSection = nonEmptySections[4] || '';
-    const followUpTopics = topicsSection
-        .replace(/Follow-up Topics.*?:/i, '')
-        .split(/[,\n]/)
-        .map(t => t.trim())
-        .filter(t => t && !t.includes('-'));
-
-    return {
-        story_narrative: narrative,
-        key_themes: themes.length > 0 ? themes : ['Personal Growth'],
-        notable_quotes: quotes.length > 0 ? quotes : ['Memorable moment'],
-        historical_context: {
-            time_periods: timePeriods,
-            events: events,
-            cultural_context: culturalContext
-        },
-        follow_up_topics: followUpTopics.length > 0 ? followUpTopics : ['Further Discussion']
+interface Story {
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    user_id: string;
+    metadata: any;
+    life_chapter?: LifeChapter;
+    chapter_metadata?: {
+        time_period: string;
+        key_events: string[];
+        locations: string[];
+        people: string[];
+        emotions: string[];
+        lessons_learned: string[];
     };
 }
 
-export const maxDuration = 60; // Set max duration to 60 seconds (Vercel hobby plan limit)
-export const dynamic = 'force-dynamic'; // Disable static optimization
+interface GenerationOptions {
+    writing_style?: 'formal' | 'casual' | 'poetic' | 'journalistic';
+    tone?: 'reflective' | 'nostalgic' | 'humorous' | 'dramatic';
+    perspective?: 'first_person' | 'third_person';
+    focus?: 'personal' | 'professional' | 'family' | 'adventure';
+    chapter_count?: number;
+}
 
 export async function POST(request: Request) {
     try {
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            console.error('Missing OpenAI API key');
-            return NextResponse.json(
-                { error: 'OpenAI API key not configured' },
-                { status: 500 }
-            );
+        console.log('Starting story generation...');
+        
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError) {
+            console.error('Auth error:', authError);
+            return NextResponse.json({ error: 'Authentication error' }, { status: 401 });
         }
 
-        const { messages, previousStory } = await request.json();
-        if (!messages || !Array.isArray(messages) || messages.length === 0) {
-            console.error('Invalid or empty messages array:', messages);
-            return NextResponse.json(
-                { error: 'Invalid conversation data' },
-                { status: 400 }
-            );
+        if (!user) {
+            console.error('No user found');
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Validate message format and filter out assistant messages
-        const validMessages = messages.filter(msg => 
-            msg && 
-            typeof msg.content === 'string' && 
-            msg.content.trim() !== '' &&
-            msg.role === 'user'  // Only include user messages
-        ).map(msg => ({
-            role: 'user',
-            content: msg.content
-        }));
+        console.log('User authenticated:', user.id);
 
-        if (validMessages.length === 0) {
-            return NextResponse.json(
-                { error: 'No valid user messages found in conversation' },
-                { status: 400 }
-            );
+        // First, let's check if we have any stories in the database
+        const { data: existingStories, error: storiesError } = await supabase
+            .from('stories')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+        if (storiesError) {
+            console.error('Error fetching stories:', storiesError);
+            throw storiesError;
         }
 
-        // Prepare messages array with previous story context if available
-        const contextMessages = [];
-        if (previousStory) {
-            contextMessages.push({
-                role: 'system',
-                content: 'Here is the previous story content to incorporate and continue:',
-            });
-            contextMessages.push({
-                role: 'assistant',
-                content: JSON.stringify(previousStory, null, 2),
-            });
+        console.log('Total stories in database:', existingStories?.length || 0);
+
+        // Get the options from the request
+        const { options } = await request.json();
+        const generationOptions: GenerationOptions = options || {};
+
+        // Fetch user's stories
+        const { data: userStories, error: userStoriesError } = await supabase
+            .from('stories')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: true });
+
+        if (userStoriesError) {
+            console.error('Error fetching user stories:', userStoriesError);
+            throw userStoriesError;
         }
 
-        // Set a timeout for the OpenAI request
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 50000); // 50 second timeout to allow for processing time
+        console.log('Found user stories:', userStories?.length || 0);
 
-        try {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
+        // Prepare story context for the AI
+        const storyContext = userStories && userStories.length > 0
+            ? userStories
+                .map((story: Story) => `Title: ${story.title}\n\nContent: ${story.content}`)
+                .join('\n\n---\n\n')
+            : 'No previous stories available. Please generate a new story based on the provided options.';
+
+        console.log('Preparing to call OpenAI...');
+
+        // Generate story using OpenAI
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4-turbo-preview",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are an expert biographer and storyteller. Your task is to transform personal stories into compelling autobiography chapters. 
+                    Follow these guidelines:
+                    1. Maintain the person's authentic voice and perspective
+                    2. Structure each chapter with proper narrative arc (exposition, rising action, climax, falling action, resolution)
+                    3. Include emotional depth and personal reflection
+                    4. Identify and develop key themes
+                    5. Use descriptive language and vivid details
+                    6. Ensure chronological coherence
+                    7. Add appropriate transitions between events
+                    8. Include personal insights and lessons learned
+                    9. Analyze and incorporate the following metadata:
+                       - Time periods and historical context
+                       - Key locations and settings
+                       - Important characters and relationships
+                       - Significant events and turning points
+                       - Cultural and societal influences
+                       - Literary devices and narrative techniques
+                       
+                    Also determine which life chapter this story belongs to:
+                    - early_childhood (0-5)
+                    - childhood (6-12)
+                    - teenage_years (13-19)
+                    - young_adult (20-25)
+                    - college
+                    - early_career
+                    - career_growth
+                    - family_life
+                    - mid_life
+                    - late_career
+                    - retirement
+                    - legacy
+                    
+                    If no previous stories are available, create a new story that can serve as the foundation for future chapters.`
                 },
-                body: JSON.stringify({
-                    model: 'gpt-4',
-                    messages: [
-                        { role: 'system', content: SYSTEM_PROMPT },
-                        ...contextMessages,
-                        ...validMessages
-                    ],
-                    temperature: 0.7,
-                }),
-                signal: controller.signal
+                {
+                    role: "user",
+                    content: `Based on these personal stories, create ${generationOptions.chapter_count || 1} compelling autobiography chapters. 
+                    Here's the context: ${storyContext}
+                    
+                    Writing Style: ${generationOptions.writing_style || 'formal'}
+                    Tone: ${generationOptions.tone || 'reflective'}
+                    Perspective: ${generationOptions.perspective || 'first_person'}
+                    Focus: ${generationOptions.focus || 'personal'}
+                    
+                    Please structure the response as a JSON object with the following fields:
+                    - chapters: Array of chapter objects, each containing:
+                      - title: A compelling title for the chapter
+                      - content: The full story content
+                      - emotion: The primary emotion conveyed
+                      - story_arc: Object containing exposition, rising_action, climax, falling_action, and resolution
+                      - themes: Array of key themes
+                      - writing_style: Description of the writing style used
+                      - life_chapter: The life period this story belongs to (from the predefined list)
+                      - chapter_metadata: Object containing:
+                        - time_period: When the events took place
+                        - locations: Array of key locations
+                        - people: Array of important people
+                        - key_events: Array of significant events
+                        - emotions: Array of emotions experienced
+                        - lessons_learned: Array of insights and lessons
+                        - cultural_context: Cultural and societal context`
+                }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        console.log('OpenAI response received');
+
+        const response = completion.choices[0].message.content;
+        if (!response) {
+            console.error('No content in OpenAI response');
+            throw new Error('No response from OpenAI');
+        }
+
+        const generatedStory = JSON.parse(response);
+        console.log('Story generated successfully');
+
+        // Save the generated story to the database
+        const { error: saveError } = await supabase
+            .from('stories')
+            .insert({
+                user_id: user.id,
+                title: generatedStory.chapters[0].title,
+                content: generatedStory.chapters.map((chapter: any) => chapter.content).join('\n\n'),
+                life_chapter: generatedStory.chapters[0].life_chapter,
+                chapter_metadata: {
+                    time_period: generatedStory.chapters[0].chapter_metadata.time_period,
+                    key_events: generatedStory.chapters[0].chapter_metadata.key_events,
+                    locations: generatedStory.chapters[0].chapter_metadata.locations,
+                    people: generatedStory.chapters[0].chapter_metadata.people,
+                    emotions: generatedStory.chapters[0].chapter_metadata.emotions,
+                    lessons_learned: generatedStory.chapters[0].chapter_metadata.lessons_learned
+                },
+                metadata: {
+                    chapters: generatedStory.chapters.map((chapter: any) => ({
+                        title: chapter.title,
+                        emotion: chapter.emotion,
+                        story_arc: chapter.story_arc,
+                        themes: chapter.themes,
+                        writing_style: chapter.writing_style,
+                        metadata: chapter.metadata
+                    }))
+                }
             });
 
-            clearTimeout(timeout);
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                console.error('OpenAI API error:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: errorData
-                });
-                return NextResponse.json(
-                    { error: `OpenAI API error: ${response.statusText}` },
-                    { status: response.status }
-                );
-            }
-
-            const data = await response.json();
-            if (!data.choices?.[0]?.message?.content) {
-                console.error('Invalid response from OpenAI:', data);
-                return NextResponse.json(
-                    { error: 'Invalid response format from OpenAI' },
-                    { status: 500 }
-                );
-            }
-
-            const storyContent = data.choices[0].message.content;
-            const storyData = convertResponseToStoryJSON(storyContent);
-            
-            // Validate the story data structure
-            if (!storyData.story_narrative || !storyData.key_themes || !storyData.notable_quotes) {
-                console.error('Invalid story data structure:', storyData);
-                return NextResponse.json(
-                    { error: 'Failed to parse story data' },
-                    { status: 500 }
-                );
-            }
-
-            return NextResponse.json(storyData);
-        } catch (error: any) {
-            clearTimeout(timeout);
-            if (error.name === 'AbortError') {
-                return NextResponse.json(
-                    { error: 'Request timed out while generating story' },
-                    { status: 504 }
-                );
-            }
-            throw error;
+        if (saveError) {
+            console.error('Error saving story:', saveError);
+            throw saveError;
         }
+
+        console.log('Story saved to database');
+        return NextResponse.json(generatedStory);
     } catch (error) {
-        console.error('Error generating story:', error);
+        console.error('Error in story generation:', error);
+        if (error instanceof Error) {
+            console.error('Error details:', error.message);
+            console.error('Error stack:', error.stack);
+        }
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Failed to generate story' },
             { status: 500 }

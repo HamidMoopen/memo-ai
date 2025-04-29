@@ -47,19 +47,19 @@ export default function SignUp() {
     };
 
     return (
-        <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center">
-            <div className="bg-white p-10 rounded-3xl shadow-lg max-w-md w-full">
-                <h1 className="text-3xl font-bold text-[#3c4f76] text-center mb-8">Complete Your Profile</h1>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="bg-accent p-10 rounded-2xl border border-border shadow-soft max-w-md w-full">
+                <h1 className="text-3xl font-bold text-foreground text-center mb-8">Complete Your Profile</h1>
 
                 {error && (
-                    <div className="mb-4 p-4 text-red-500 bg-red-50 rounded-lg">
+                    <div className="mb-4 p-4 text-destructive bg-destructive/10 rounded-xl">
                         {error}
                     </div>
                 )}
 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-[#383f51] mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                             Email
                         </label>
                         <input
@@ -67,13 +67,13 @@ export default function SignUp() {
                             id="email"
                             value={formData.email}
                             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
+                            className="w-full px-4 py-3 border border-border rounded-xl focus:border-primary focus:outline-none bg-background text-foreground"
                             required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-[#383f51] mb-2">
+                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                             Full Name
                         </label>
                         <input
@@ -81,13 +81,13 @@ export default function SignUp() {
                             id="name"
                             value={formData.name}
                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
+                            className="w-full px-4 py-3 border border-border rounded-xl focus:border-primary focus:outline-none bg-background text-foreground"
                             required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-[#383f51] mb-2">
+                        <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
                             Phone Number
                         </label>
                         <input
@@ -95,7 +95,7 @@ export default function SignUp() {
                             id="phone"
                             value={formData.phone}
                             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
+                            className="w-full px-4 py-3 border border-border rounded-xl focus:border-primary focus:outline-none bg-background text-foreground"
                             required
                             pattern="[0-9]{10}"
                             placeholder="1234567890"
@@ -103,7 +103,7 @@ export default function SignUp() {
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-[#383f51] mb-2">
+                        <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                             Password
                         </label>
                         <input
@@ -111,7 +111,7 @@ export default function SignUp() {
                             id="password"
                             value={formData.password}
                             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-[#3c4f76] focus:border-[#3c4f76] text-[#383f51]"
+                            className="w-full px-4 py-3 border border-border rounded-xl focus:border-primary focus:outline-none bg-background text-foreground"
                             required
                             minLength={6}
                         />
@@ -120,15 +120,15 @@ export default function SignUp() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-[#3c4f76] hover:bg-[#2a3b5a] text-white text-base py-6 rounded-2xl transition-all duration-300"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 rounded-xl shadow-soft transition-all duration-300"
                     >
                         {isLoading ? 'Creating Account...' : 'Sign Up'}
                     </Button>
                 </form>
 
-                <p className="mt-6 text-center text-base text-[#383f51]">
+                <p className="mt-6 text-center text-muted-foreground">
                     Already have an account?{" "}
-                    <Link href="/login" className="text-[#3c4f76] hover:text-[#2a3b5a] font-medium">
+                    <Link href="/login" className="text-primary hover:text-primary/90 font-medium">
                         Sign in
                     </Link>
                 </p>

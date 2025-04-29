@@ -75,29 +75,29 @@ export default function ScheduledCallsPage() {
     const completedCalls = scheduledCalls.filter(call => call.status === "completed");
 
     return (
-        <div className="min-h-screen bg-[#faf9f6]">
-            <div className="container mx-auto px-8 py-8">
+        <div className="min-h-screen bg-background">
+            <div className="max-w-5xl mx-auto w-full px-8 py-12">
                 <div className="flex items-center justify-between mb-12">
                     <BackButton />
-                    <h1 className="text-2xl font-bold text-[#3c4f76]">Eterna</h1>
+                    <h1 className="text-2xl font-bold text-foreground">Eterna</h1>
                     <div className="w-8" />
                 </div>
 
-                <div className="max-w-3xl mx-auto space-y-8">
+                <div className="max-w-3xl mx-auto space-y-12">
                     <div className="text-center space-y-4">
-                        <h2 className="text-4xl font-bold text-[#3c4f76]">Your Scheduled Calls</h2>
-                        <p className="text-xl text-[#383f51]/80">
+                        <h2 className="text-4xl font-bold text-foreground">Your Scheduled Calls</h2>
+                        <p className="text-xl text-muted-foreground">
                             View and manage your upcoming and past story recording sessions.
                         </p>
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex border-b border-[#3c4f76]/20">
+                    <div className="flex border-b border-border">
                         <button
                             onClick={() => setActiveTab("upcoming")}
                             className={`px-6 py-3 font-medium text-lg ${activeTab === "upcoming"
-                                    ? "text-[#3c4f76] border-b-2 border-[#3c4f76]"
-                                    : "text-[#383f51]/60 hover:text-[#3c4f76]/80"
+                                    ? "text-primary border-b-2 border-primary"
+                                    : "text-muted-foreground hover:text-primary/80"
                                 }`}
                         >
                             Upcoming ({upcomingCalls.length})
@@ -105,8 +105,8 @@ export default function ScheduledCallsPage() {
                         <button
                             onClick={() => setActiveTab("completed")}
                             className={`px-6 py-3 font-medium text-lg ${activeTab === "completed"
-                                    ? "text-[#3c4f76] border-b-2 border-[#3c4f76]"
-                                    : "text-[#383f51]/60 hover:text-[#3c4f76]/80"
+                                    ? "text-primary border-b-2 border-primary"
+                                    : "text-muted-foreground hover:text-primary/80"
                                 }`}
                         >
                             Completed ({completedCalls.length})
@@ -114,14 +114,14 @@ export default function ScheduledCallsPage() {
                     </div>
 
                     {/* Call List */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {activeTab === "upcoming" && upcomingCalls.length === 0 && (
-                            <div className="text-center py-12 bg-white rounded-3xl shadow-sm border-2 border-[#3c4f76]/10">
-                                <Calendar className="mx-auto h-12 w-12 text-[#3c4f76]/60 mb-4" />
-                                <p className="text-xl text-[#383f51] mb-6">You don't have any upcoming calls scheduled.</p>
+                            <div className="text-center py-12 bg-accent rounded-2xl border border-border shadow-soft">
+                                <Calendar className="mx-auto h-12 w-12 text-primary/60 mb-4" />
+                                <p className="text-xl text-foreground mb-6">You don't have any upcoming calls scheduled.</p>
                                 <Button
                                     onClick={() => window.location.href = '/schedule'}
-                                    className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white px-6 py-3 rounded-xl"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl shadow-soft"
                                 >
                                     Schedule a Call
                                 </Button>
@@ -129,9 +129,9 @@ export default function ScheduledCallsPage() {
                         )}
 
                         {activeTab === "completed" && completedCalls.length === 0 && (
-                            <div className="text-center py-12 bg-white rounded-3xl shadow-sm border-2 border-[#3c4f76]/10">
-                                <CheckCircle className="mx-auto h-12 w-12 text-[#3c4f76]/60 mb-4" />
-                                <p className="text-xl text-[#383f51]">You don't have any completed calls yet.</p>
+                            <div className="text-center py-12 bg-accent rounded-2xl border border-border shadow-soft">
+                                <CheckCircle className="mx-auto h-12 w-12 text-primary/60 mb-4" />
+                                <p className="text-xl text-foreground">You don't have any completed calls yet.</p>
                             </div>
                         )}
 
@@ -139,23 +139,23 @@ export default function ScheduledCallsPage() {
                             upcomingCalls.map((call) => (
                                 <div
                                     key={call.id}
-                                    className="bg-white p-6 rounded-3xl shadow-sm border-2 border-[#3c4f76]/10 hover:shadow-md transition-shadow"
+                                    className="bg-accent p-8 rounded-2xl border border-border shadow-soft hover:border-primary hover:shadow-lg transition-all duration-300"
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
-                                            <div className="w-14 h-14 rounded-2xl bg-[#3c4f76]/10 flex items-center justify-center mr-5">
-                                                <Phone className="w-6 h-6 text-[#3c4f76]" />
+                                            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mr-6">
+                                                <Phone className="w-7 h-7 text-primary" />
                                             </div>
                                             <div>
-                                                <h3 className="text-xl font-bold text-[#3c4f76]">{call.title}</h3>
-                                                <div className="flex items-center mt-1 text-[#383f51]/80">
+                                                <h3 className="text-xl font-bold text-foreground">{call.title}</h3>
+                                                <div className="flex items-center mt-2 text-muted-foreground">
                                                     <Calendar className="w-4 h-4 mr-2" />
                                                     <span className="mr-4">{formatDate(call.date)}</span>
                                                     <Clock className="w-4 h-4 mr-2" />
                                                     <span>{formatTime(call.time)}</span>
                                                 </div>
-                                                <div className="mt-2">
-                                                    <span className="text-sm bg-[#3c4f76]/10 text-[#3c4f76] px-3 py-1 rounded-full">
+                                                <div className="mt-3">
+                                                    <span className="text-sm bg-primary/10 text-primary px-4 py-1.5 rounded-full">
                                                         {call.frequency === "once" ? "One-time" :
                                                             call.frequency === "weekly" ? "Weekly" :
                                                                 call.frequency === "biweekly" ? "Bi-weekly" : "Monthly"}
@@ -163,19 +163,19 @@ export default function ScheduledCallsPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex space-x-2">
+                                        <div className="flex space-x-3">
                                             <button
-                                                className="p-2 rounded-full hover:bg-[#3c4f76]/10 transition-colors"
+                                                className="p-2.5 rounded-xl hover:bg-primary/10 transition-colors"
                                                 title="Edit call"
                                             >
-                                                <Edit className="w-5 h-5 text-[#3c4f76]" />
+                                                <Edit className="w-5 h-5 text-primary" />
                                             </button>
                                             <button
                                                 onClick={() => cancelCall(call.id)}
-                                                className="p-2 rounded-full hover:bg-red-100 transition-colors"
+                                                className="p-2.5 rounded-xl hover:bg-destructive/10 transition-colors"
                                                 title="Cancel call"
                                             >
-                                                <X className="w-5 h-5 text-red-500" />
+                                                <X className="w-5 h-5 text-destructive" />
                                             </button>
                                         </div>
                                     </div>
@@ -186,16 +186,16 @@ export default function ScheduledCallsPage() {
                             completedCalls.map((call) => (
                                 <div
                                     key={call.id}
-                                    className="bg-white p-6 rounded-3xl shadow-sm border-2 border-[#3c4f76]/10"
+                                    className="bg-accent p-8 rounded-2xl border border-border shadow-soft"
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
-                                            <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mr-5">
-                                                <CheckCircle className="w-6 h-6 text-green-600" />
+                                            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mr-6">
+                                                <CheckCircle className="w-7 h-7 text-primary" />
                                             </div>
                                             <div>
-                                                <h3 className="text-xl font-bold text-[#3c4f76]">{call.title}</h3>
-                                                <div className="flex items-center mt-1 text-[#383f51]/80">
+                                                <h3 className="text-xl font-bold text-foreground">{call.title}</h3>
+                                                <div className="flex items-center mt-2 text-muted-foreground">
                                                     <Calendar className="w-4 h-4 mr-2" />
                                                     <span className="mr-4">{formatDate(call.date)}</span>
                                                     <Clock className="w-4 h-4 mr-2" />
@@ -205,7 +205,7 @@ export default function ScheduledCallsPage() {
                                         </div>
                                         <Button
                                             variant="outline"
-                                            className="text-[#3c4f76] border-[#3c4f76]/20 hover:bg-[#3c4f76]/10 hover:text-[#3c4f76]"
+                                            className="text-primary border-primary/20 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                                         >
                                             View Story
                                         </Button>
@@ -219,7 +219,7 @@ export default function ScheduledCallsPage() {
                         <div className="flex justify-center mt-8">
                             <Button
                                 onClick={() => window.location.href = '/schedule'}
-                                className="bg-[#3c4f76] hover:bg-[#2a3b5a] text-white px-8 py-4 rounded-xl text-lg"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-xl text-lg shadow-soft"
                             >
                                 Schedule Another Call
                             </Button>
