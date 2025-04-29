@@ -75,7 +75,7 @@ export default function DashboardLayout({
               >
                 Eterna
               </Link>
-              
+
               {/* Quick Actions - Desktop */}
               <div className="hidden lg:flex items-center gap-4">
                 <Button
