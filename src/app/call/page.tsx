@@ -1,10 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
-import { PhoneCall, Calendar, BookOpen, ChevronLeft, Mic, Plus, Play, Flame, Star } from "lucide-react"
+import { useState, useEffect } from "react"
+import { PhoneCall, Calendar, BookOpen, ChevronLeft, Mic, Plus, Play, Flame, Star, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { supabase } from '@/lib/supabaseBrowserClient'
+import { useToast } from "@/components/ui/use-toast"
+import Vapi from '@vapi-ai/web'
 
 const recentStories = [
     {
@@ -24,12 +28,220 @@ const recentStories = [
     }
 ]
 
+// Types for VAPI events
+interface ConversationUpdate {
+    transcript: string;
+    confidence: number;
+    isFinal: boolean;
+}
+
+interface ConversationSummary {
+    transcript: string;
+    duration: number;
+    metadata: {
+        topics: string[];
+        sentiment: string;
+    };
+}
+
+// Initialize VAPI client
+const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY || '')
+
+// Helper function to format phone number to E.164
+function formatToE164(phoneNumber: string): string {
+    // Remove all non-digit characters
+    const digits = phoneNumber.replace(/\D/g, '')
+    
+    // If number starts with '1', remove it
+    const withoutCountryCode = digits.startsWith('1') ? digits.slice(1) : digits
+    
+    // Ensure 10 digits
+    if (withoutCountryCode.length !== 10) {
+        throw new Error('Phone number must be exactly 10 digits')
+    }
+    
+    return `+1${withoutCountryCode}`
+}
+
 export default function StoryJournalPage() {
     const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+    const [isRecording, setIsRecording] = useState(false)
     const [hoveredStory, setHoveredStory] = useState<number | null>(null)
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+    const [isVerifying, setIsVerifying] = useState(false)
+    const [verificationStep, setVerificationStep] = useState<'input' | 'verify' | 'confirmed'>('input')
+    const { toast } = useToast()
     const storiesThisWeek = 2
     const weeklyGoal = 3
     const streak = 4
+
+    // Load user's profile and phone number
+    useEffect(() => {
+        async function loadProfile() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('phone_number, phone_number_verified')
+                        .eq('id', user.id)
+                        .single()
+                    
+                    if (profile?.phone_number) {
+                        setPhoneNumber(profile.phone_number)
+                        setVerificationStep(profile.phone_number_verified ? 'confirmed' : 'verify')
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error)
+            } finally {
+                setIsLoadingProfile(false)
+            }
+        }
+        loadProfile()
+    }, [])
+
+    // Function to save phone number to profile
+    const savePhoneNumber = async (number: string) => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session?.access_token) {
+                throw new Error('Not authenticated')
+            }
+
+            const response = await fetch('/api/profile', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    phoneNumber: number,
+                }),
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Failed to save phone number')
+            }
+
+            console.log('Profile saved successfully')
+        } catch (error) {
+            console.error('Error saving phone number:', error)
+            throw error
+        }
+    }
+
+    // Function to handle phone calls
+    const startPhoneCall = async () => {
+        try {
+            if (!phoneNumber) {
+                toast({
+                    title: "Phone number required",
+                    description: "Please enter your phone number to receive the call.",
+                    variant: "destructive"
+                })
+                return
+            }
+
+            // Format phone number to E.164
+            let formattedPhoneNumber: string
+            try {
+                formattedPhoneNumber = formatToE164(phoneNumber)
+            } catch (error) {
+                toast({
+                    title: "Invalid phone number",
+                    description: "Please enter a valid 10-digit US phone number.",
+                    variant: "destructive"
+                })
+                return
+            }
+
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session?.access_token) {
+                throw new Error('Not authenticated')
+            }
+
+            // VAPI configuration
+            const assistantId = '8840fd84-49f0-4404-ae3d-3002ee1d2d51'
+            const phoneNumberId = '732cec66-0a2f-4d7a-888f-904b88136202'
+            const type = 'outbound'
+
+            // Log the call configuration
+            console.log('📞 Initiating VAPI call:', {
+                assistantId,
+                phoneNumberId,
+                customerPhoneNumber: formattedPhoneNumber,
+                type,
+                timestamp: new Date().toISOString()
+            })
+
+            const response = await fetch('/api/call', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    assistantId,
+                    phoneNumberId,
+                    customerPhoneNumber: formattedPhoneNumber,
+                    type
+                }),
+            })
+
+            const data = await response.json()
+            if (!response.ok) {
+                console.error('❌ Call API error:', data)
+                throw new Error(data.error || 'Failed to initiate call')
+            }
+            
+            console.log('✅ Call initiated successfully:', data)
+            
+            setIsCallModalOpen(false)
+            toast({
+                title: "Call initiated!",
+                description: "You will receive a call shortly at " + formattedPhoneNumber,
+                duration: 5000,
+            })
+
+            // Save the verified phone number to profile
+            await savePhoneNumber(formattedPhoneNumber)
+        } catch (error) {
+            console.error('❌ Error initiating call:', error)
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to initiate call. Please try again.",
+                variant: "destructive"
+            })
+        }
+    }
+
+    // Function to handle direct web recording
+    const startWebRecording = async () => {
+        try {
+            setIsRecording(true)
+            const call = await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '')
+            
+            // Handle conversation updates
+            vapi.on('message', (update: ConversationUpdate) => {
+                console.log('Conversation update:', update)
+                // TODO: Update UI with real-time transcript
+            })
+
+            // Handle conversation end
+            vapi.on('call-end', () => {
+                console.log('Conversation ended')
+                setIsRecording(false)
+                // TODO: Save conversation to Supabase
+            })
+
+        } catch (error) {
+            console.error('Error starting recording:', error)
+            setIsRecording(false)
+        }
+    }
 
     return (
         <div className="relative min-h-screen overflow-x-hidden">
@@ -81,14 +293,27 @@ export default function StoryJournalPage() {
                         </div>
                     </button>
                     {/* Direct Recording Option */}
-                    <Link href="/topics" className="relative group focus:outline-none">
-                        <div className="w-40 h-40 md:w-48 md:h-48 rounded-full bg-card/90 backdrop-blur-md shadow-xl border-2 border-primary/20 flex flex-col items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl group-hover:rotate-2 group-active:scale-95 group-hover:border-primary/60">
-                            <Mic className="w-14 h-14 text-primary mb-2 drop-shadow-lg" />
-                            <span className="text-xl font-bold text-foreground">Direct Recording</span>
+                    <button 
+                        onClick={startWebRecording}
+                        className="relative group focus:outline-none"
+                        disabled={isRecording}
+                    >
+                        <div className={cn(
+                            "w-40 h-40 md:w-48 md:h-48 rounded-full bg-card/90 backdrop-blur-md shadow-xl border-2 border-primary/20 flex flex-col items-center justify-center transition-all duration-300",
+                            "group-hover:scale-105 group-hover:shadow-2xl group-hover:rotate-2 group-active:scale-95 group-hover:border-primary/60",
+                            isRecording && "border-red-500/60 animate-pulse"
+                        )}>
+                            <Mic className={cn(
+                                "w-14 h-14 mb-2 drop-shadow-lg",
+                                isRecording ? "text-red-500" : "text-primary"
+                            )} />
+                            <span className="text-xl font-bold text-foreground">
+                                {isRecording ? "Recording..." : "Direct Recording"}
+                            </span>
                             <span className="text-sm text-muted-foreground mt-1">Record instantly</span>
                             <span className="absolute -top-3 -right-3 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md animate-bounce">Popular</span>
                         </div>
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Recent Stories - Horizontal Scrollable Animated Stack */}
@@ -166,6 +391,58 @@ export default function StoryJournalPage() {
                                     We'll call you and guide you through sharing your story. Our voice assistant will ask you questions about topics you're interested in.
                                 </p>
                             </div>
+
+                            {isLoadingProfile ? (
+                                <div className="text-center">Loading...</div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {verificationStep === 'input' && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-foreground">
+                                                Your Phone Number
+                                            </label>
+                                            <Input
+                                                type="tel"
+                                                placeholder="+1 (555) 555-5555"
+                                                value={phoneNumber}
+                                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                                className="w-full"
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Enter your phone number to receive the call
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {verificationStep === 'verify' && (
+                                        <div className="text-center space-y-4">
+                                            <div className="flex items-center justify-center gap-2 text-primary">
+                                                <Check className="w-5 h-5" />
+                                                <span>Number saved: {phoneNumber}</span>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">
+                                                We'll verify your number with a test call
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {verificationStep === 'confirmed' && (
+                                        <div className="text-center space-y-4">
+                                            <div className="flex items-center justify-center gap-2 text-primary">
+                                                <Check className="w-5 h-5" />
+                                                <span>Verified number: {phoneNumber}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => setVerificationStep('input')}
+                                                className="text-sm text-primary hover:underline"
+                                            >
+                                                Use a different number
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="flex justify-end gap-4">
                                 <Button
                                     variant="outline"
@@ -175,7 +452,8 @@ export default function StoryJournalPage() {
                                     Cancel
                                 </Button>
                                 <Button
-                                    onClick={() => setIsCallModalOpen(false)}
+                                    onClick={startPhoneCall}
+                                    disabled={!phoneNumber || isLoadingProfile}
                                     className="bg-primary hover:bg-primary/90 px-6 py-3 text-lg"
                                 >
                                     Call Me Now
