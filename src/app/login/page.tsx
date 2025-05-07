@@ -4,15 +4,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { signIn, type LoginFormData, type LoginResult } from './actions';
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { getRedirectUrl } from "@/lib/utils";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaMicrosoft } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-    const supabase = createClient();
+    const router = useRouter();
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-    const [error, setError] = useState<LoginResult | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState<LoginFormData>({
         email: '',
@@ -35,27 +36,32 @@ export default function LoginPage() {
             });
             if (error) throw error;
         } catch (error: any) {
-            setError({ error: 'unknown', message: 'Error signing in with Google' });
+            setError('Error signing in with Google');
         } finally {
             setIsGoogleLoading(false);
         }
     }
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError(null);
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
         setIsLoading(true);
-        try {
-            const result = await signIn(formData);
-            if (result.error) {
-                setError(result);
-            }
-        } catch (error: any) {
-            setError({ error: 'unknown', message: error.message });
-        } finally {
+        setError(null);
+
+        const formData = new FormData(event.currentTarget);
+        const result = await signIn(formData);
+
+        if (result.error) {
+            setError(result.error);
             setIsLoading(false);
+            return;
         }
-    };
+
+        if (result.success) {
+            // Redirect to dashboard on successful login
+            router.push('/dashboard');
+            router.refresh();
+        }
+    }
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-background">
@@ -94,18 +100,9 @@ export default function LoginPage() {
                     <h2 className="text-3xl font-bold text-foreground text-center mb-2">Lets write history!</h2>
                     <p className="text-md text-foreground/60 text-center mb-8">Sign in to continue your story.</p>
 
-                    {error?.message && (
+                    {error && (
                         <div className="mb-4 p-4 text-destructive bg-destructive/10 rounded-xl text-center">
-                            {error.message}
-                            {error.showSignUp && (
-                                <span>
-                                    {" "}
-                                    <Link href="/signup" className="text-primary hover:text-primary/90 font-medium">
-                                        Create an account
-                                    </Link>
-                                    {" "}with this email?
-                                </span>
-                            )}
+                            {error}
                         </div>
                     )}
 

@@ -21,7 +21,7 @@ import {
 import { DashboardHeader } from "./components/DashboardHeader";
 import { usePathname, useRouter } from 'next/navigation';
 import { useNavigation } from '@/contexts/NavigationContext';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -39,26 +39,30 @@ export default function DashboardPage() {
     const router = useRouter();
     const [userName, setUserName] = useState<string>('');
     const [recentStories, setRecentStories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [upcomingCalls, setUpcomingCalls] = useState<any[]>([
         { id: 1, title: "Weekly Story Call", date: "Sunday, June 12", time: "2:00 PM" },
         { id: 2, title: "Weekly Story Call", date: "Sunday, June 19", time: "2:00 PM" }
     ]);
-    const supabase = createClient();
 
     useEffect(() => {
         addToHistory(pathname);
 
         const checkSession = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                router.push('/login');
-                return;
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    setUserName(user.user_metadata.full_name);
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+            } finally {
+                setLoading(false);
             }
-            setUserName(user.user_metadata.full_name);
         };
 
         checkSession();
-    }, [pathname, addToHistory, router]);
+    }, [pathname, addToHistory]);
 
     useEffect(() => {
         async function fetchRecentStories() {
@@ -78,6 +82,14 @@ export default function DashboardPage() {
 
         fetchRecentStories();
     }, []);
+
+    if (loading) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <p className="text-lg text-muted-foreground">Loading...</p>
+            </div>
+        );
+    }
 
     return (
         <main className="w-full">
