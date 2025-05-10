@@ -18,6 +18,8 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          life_chapter: string | null
+          chapter_metadata: Json | null
         }
         Insert: {
           category?: string | null
@@ -27,6 +29,8 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          life_chapter?: string | null
+          chapter_metadata?: Json | null
         }
         Update: {
           category?: string | null
@@ -36,6 +40,8 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          life_chapter?: string | null
+          chapter_metadata?: Json | null
         }
         Relationships: []
       }

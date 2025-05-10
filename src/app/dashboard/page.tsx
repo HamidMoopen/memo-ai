@@ -4,15 +4,34 @@ import Link from "next/link";
 import {
     BookOpen,
     Mic,
-    ChartBarBig,
     CalendarDays,
     ChevronRight,
-    Phone
+    Phone,
+    Plus,
+    Play,
+    Clock,
+    BookMarked,
+    Home,
+    BookText,
+    Calendar,
+    Share2,
+    Heart,
+    MessageCircle
 } from "lucide-react";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { usePathname, useRouter } from 'next/navigation';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { createClient } from '@/lib/supabase/client';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+const navigation = [
+    { name: 'Home', href: '/dashboard', icon: Home },
+    { name: 'Record', href: '/call', icon: Mic },
+    { name: 'Stories', href: '/dashboard/stories', icon: BookText },
+    { name: 'Schedule', href: '/schedule', icon: Calendar },
+    { name: 'Share', href: '/publish', icon: Share2 },
+];
 
 export default function DashboardPage() {
     const pathname = usePathname();
@@ -21,7 +40,6 @@ export default function DashboardPage() {
     const [userName, setUserName] = useState<string>('');
     const [recentStories, setRecentStories] = useState<any[]>([]);
     const [upcomingCalls, setUpcomingCalls] = useState<any[]>([
-        // Example data - in a real app, these would come from your database
         { id: 1, title: "Weekly Story Call", date: "Sunday, June 12", time: "2:00 PM" },
         { id: 2, title: "Weekly Story Call", date: "Sunday, June 19", time: "2:00 PM" }
     ]);
@@ -62,129 +80,174 @@ export default function DashboardPage() {
     }, []);
 
     return (
-        <div>
-            <DashboardHeader
-                title={`Welcome, ${userName}!`}
-                description="Your life story, recorded and preserved"
-            />
-            <div className="py-8">
-                {/* Quick Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                    {[
-                        {
-                            icon: BookOpen,
-                            title: "Browse Stories",
-                            description: "View all your recorded stories",
-                            href: "/dashboard/stories"
-                        },
-                        {
-                            icon: Mic,
-                            title: "Record Story",
-                            description: "Start recording a new story",
-                            href: "/call"
-                        },
-                        {
-                            icon: CalendarDays,
-                            title: "Schedule Call",
-                            description: "Set up your next story session",
-                            href: "/schedule"
-                        }
-                    ].map((action) => (
-                        <Link
-                            key={action.title}
-                            href={action.href}
-                            className="bg-white p-6 sm:p-8 rounded-3xl shadow hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+        <main className="w-full">
+            <div className="max-w-5xl mx-auto w-full px-8 py-12">
+                {/* Hero Section */}
+                <div className="text-center mb-16">
+                    <h1 className="text-5xl font-bold text-foreground mb-6">
+                        Welcome back, {userName}! 👋
+                    </h1>
+                    <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+                        Your stories are waiting to be told. Let's create something beautiful today.
+                    </p>
+                    <div className="flex gap-6 justify-center">
+                        <Button 
+                            size="lg" 
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-7 text-lg rounded-xl shadow-soft"
+                            onClick={() => router.push('/call')}
                         >
-                            <div className="w-16 sm:w-20 h-16 sm:h-20 bg-[#3c4f76]/10 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
-                                <action.icon className="w-8 sm:w-10 h-8 sm:h-10 text-[#3c4f76]" />
-                            </div>
-                            <h3 className="text-xl sm:text-2xl font-bold text-[#3c4f76] mb-2 sm:mb-3">{action.title}</h3>
-                            <p className="text-base sm:text-lg text-[#383f51]">{action.description}</p>
-                        </Link>
-                    ))}
+                            <Mic className="w-5 h-5 mr-2" />
+                            Record New Story
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            size="lg"
+                            className="border-primary text-primary hover:bg-accent px-10 py-7 text-lg rounded-xl shadow-soft"
+                            onClick={() => router.push('/schedule')}
+                        >
+                            <Calendar className="w-5 h-5 mr-2" />
+                            Schedule Call
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Grid layout for Recent Stories and Upcoming Calls */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-                    {/* Recent Stories */}
-                    <div className="bg-white p-6 sm:p-8 rounded-3xl shadow">
-                        <h2 className="text-xl sm:text-2xl font-bold text-[#3c4f76] mb-4 sm:mb-6">Recent Stories</h2>
-                        <div className="space-y-4">
-                            {recentStories.length === 0 ? (
-                                <div className="p-4 sm:p-6 border-2 border-gray-100 rounded-2xl hover:bg-[#faf9f6] transition-colors">
-                                    <p className="text-lg text-[#3c4f76]">No stories recorded yet</p>
-                                    <p className="text-[#383f51]">Start by recording your first story!</p>
-                                </div>
-                            ) : (
-                                recentStories.map((story) => (
-                                    <Link
-                                        key={story.id}
-                                        href={`/dashboard/stories/${story.id}`}
-                                        className="block p-4 sm:p-6 border-2 border-gray-100 rounded-2xl hover:bg-[#faf9f6] transition-colors"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h3 className="text-lg font-medium text-[#3c4f76]">{story.title}</h3>
-                                                <div className="flex items-center text-[#383f51] mt-2">
-                                                    <CalendarDays className="mr-2 h-4 w-4" />
-                                                    {new Date(story.created_at).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                            <ChevronRight className="w-5 h-5 text-[#3c4f76]" />
-                                        </div>
-                                    </Link>
-                                ))
-                            )}
-                        </div>
+                {/* Featured Stories */}
+                <div className="mb-16">
+                    <div className="flex items-center justify-between mb-10">
+                        <h2 className="text-3xl font-bold text-foreground">Your Stories</h2>
+                        <Link
+                            href="/dashboard/stories"
+                            className="text-primary hover:text-primary/90 flex items-center text-lg"
+                        >
+                            View All Stories
+                            <ChevronRight className="w-5 h-5 ml-2" />
+                        </Link>
                     </div>
-
-                    {/* Upcoming Calls */}
-                    <div className="bg-white p-6 sm:p-8 rounded-3xl shadow">
-                        <div className="flex items-center justify-between mb-4 sm:mb-6">
-                            <h2 className="text-xl sm:text-2xl font-bold text-[#3c4f76]">Upcoming Calls</h2>
-                            <Link
-                                href="/schedule"
-                                className="text-sm text-[#3c4f76] hover:text-[#2a3b5a] underline"
-                            >
-                                Schedule New
-                            </Link>
-                        </div>
-                        <div className="space-y-4">
-                            {upcomingCalls.length === 0 ? (
-                                <div className="p-4 sm:p-6 border-2 border-gray-100 rounded-2xl hover:bg-[#faf9f6] transition-colors">
-                                    <p className="text-lg text-[#3c4f76]">No upcoming calls</p>
-                                    <p className="text-[#383f51]">Schedule a call to start sharing your stories!</p>
-                                </div>
-                            ) : (
-                                upcomingCalls.map((call) => (
-                                    <div
-                                        key={call.id}
-                                        className="block p-4 sm:p-6 border-2 border-gray-100 rounded-2xl hover:bg-[#faf9f6] transition-colors"
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {recentStories.length === 0 ? (
+                            <div className="col-span-full p-12 rounded-2xl border border-border bg-accent shadow-soft">
+                                <div className="text-center">
+                                    <BookOpen className="w-16 h-16 text-primary mx-auto mb-6" />
+                                    <h3 className="text-2xl font-medium text-foreground mb-4">Your Story Journey Begins Here</h3>
+                                    <p className="text-muted-foreground mb-8 text-lg">Start preserving your memories and experiences for generations to come.</p>
+                                    <Button 
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-xl shadow-soft"
+                                        onClick={() => router.push('/call')}
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <div className="w-10 h-10 rounded-full bg-[#3c4f76]/10 flex items-center justify-center mr-3">
-                                                    <Phone className="w-5 h-5 text-[#3c4f76]" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-lg font-medium text-[#3c4f76]">{call.title}</h3>
-                                                    <div className="flex items-center text-[#383f51] mt-1">
-                                                        <CalendarDays className="mr-2 h-4 w-4" />
-                                                        {call.date} • {call.time}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Link href="/scheduled-calls" className="text-sm text-[#3c4f76] hover:text-[#2a3b5a]">
-                                                View All
-                                            </Link>
+                                        Record Your First Story
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            recentStories.map((story) => (
+                                <div
+                                    key={story.id}
+                                    className="rounded-2xl border border-border bg-accent overflow-hidden group hover:shadow-lg transition-all duration-300 shadow-soft"
+                                >
+                                    <div className="aspect-video bg-accent flex items-center justify-center relative">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                        <Play className="w-16 h-16 text-primary opacity-80 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                    <div className="p-8">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <div className="w-2 h-2 rounded-full bg-primary" />
+                                            <span className="text-sm text-muted-foreground">
+                                                {new Date(story.created_at).toLocaleDateString('en-US', {
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                })}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-xl font-medium text-foreground mb-3">{story.title}</h3>
+                                        <p className="text-muted-foreground mb-6 line-clamp-2">
+                                            {story.description || "A precious memory captured for eternity..."}
+                                        </p>
+                                        <div className="flex items-center gap-4">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-primary hover:bg-primary/10"
+                                                onClick={() => router.push(`/dashboard/stories/${story.id}`)}
+                                            >
+                                                <Play className="w-4 h-4 mr-2" />
+                                                Listen
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-muted-foreground hover:text-primary"
+                                                onClick={() => router.push(`/dashboard/stories/${story.id}/edit`)}
+                                            >
+                                                <BookOpen className="w-4 h-4 mr-2" />
+                                                Details
+                                            </Button>
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Upcoming Calls */}
+                <div className="mb-16">
+                    <div className="flex items-center justify-between mb-10">
+                        <h2 className="text-3xl font-bold text-foreground">Upcoming Story Sessions</h2>
+                        <Link
+                            href="/schedule"
+                            className="text-primary hover:text-primary/90 flex items-center text-lg"
+                        >
+                            Schedule New
+                            <Plus className="w-5 h-5 ml-2" />
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {upcomingCalls.length === 0 ? (
+                            <div className="col-span-full p-12 rounded-2xl border border-border bg-accent shadow-soft">
+                                <div className="text-center">
+                                    <Calendar className="w-16 h-16 text-primary mx-auto mb-6" />
+                                    <h3 className="text-2xl font-medium text-foreground mb-4">No upcoming calls</h3>
+                                    <p className="text-muted-foreground mb-8 text-lg">Schedule a call to start sharing your stories!</p>
+                                    <Button 
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-xl shadow-soft"
+                                        onClick={() => router.push('/schedule')}
+                                    >
+                                        Schedule Call
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            upcomingCalls.map((call) => (
+                                <div
+                                    key={call.id}
+                                    className="p-8 rounded-2xl border border-border bg-accent hover:shadow-lg transition-all duration-300 shadow-soft"
+                                >
+                                    <div className="flex items-start gap-6">
+                                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                                            <Phone className="w-7 h-7 text-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-medium text-foreground mb-2">{call.title}</h3>
+                                            <div className="flex items-center text-muted-foreground text-lg">
+                                                <CalendarDays className="w-5 h-5 mr-2" />
+                                                {call.date} • {call.time}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground hover:text-primary"
+                                        >
+                                            <ChevronRight className="w-6 h-6" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     );
 } 
